@@ -1,71 +1,20 @@
 import { Request, Response } from 'express';
 import * as chamadoModel from '../models/chamadoModel';
+import * as comentarioModel from '../models/comentarioModel';
 import * as usuarioModel from '../models/usuarioModel';
 import {
   CATEGORIAS_VALIDAS,
   CategoriaChamado,
-  ChamadoDetalhado,
   FiltrosChamado,
   PRIORIDADES_VALIDAS,
   PrioridadeChamado,
   STATUS_VALIDOS,
   StatusChamado,
 } from '../types';
-import { PayloadToken } from '../middlewares/auth';
+import { carregarChamadoVisivel, lerId } from '../utils/permissoes';
 
 const TAMANHO_MINIMO_TITULO = 5;
 const TAMANHO_MINIMO_DESCRICAO = 10;
-
-/**
- * Converte o :id da URL em numero, ou null se nao for um id valido.
- *
- * O parametro aceita string[] porque no Express 5 um parametro de rota
- * pode chegar como array (rotas com wildcard). Tratar aqui evita um
- * cast forcado em cada uso, que so esconderia o caso em vez de resolver.
- */
-function lerId(valor: string | string[] | undefined): number | null {
-  if (typeof valor !== 'string') return null;
-
-  const id = Number(valor);
-  return Number.isInteger(id) && id > 0 ? id : null;
-}
-
-/**
- * Um tecnico enxerga qualquer chamado; um usuario comum, apenas os que
- * abriu. Esta regra depende do dono do registro, entao nao cabe no
- * middleware autorizar, que so conhece o papel.
- */
-function podeVer(usuario: PayloadToken, chamado: ChamadoDetalhado): boolean {
-  return usuario.papel === 'tecnico' || chamado.solicitante_id === usuario.id;
-}
-
-/**
- * Carrega o chamado e aplica a regra de visibilidade.
- *
- * Responde 404 tanto para inexistente quanto para chamado de outra
- * pessoa: um 403 confirmaria que o id existe, permitindo mapear quantos
- * chamados o sistema tem apenas variando o numero na URL.
- */
-async function carregarVisivel(
-  req: Request,
-  res: Response
-): Promise<ChamadoDetalhado | null> {
-  const id = lerId(req.params.id);
-
-  if (id === null) {
-    res.status(400).json({ erro: 'Id invalido' });
-    return null;
-  }
-
-  const chamado = await chamadoModel.buscarPorId(id);
-
-  if (!chamado || !podeVer(req.usuario!, chamado)) {
-    res.status(404).json({ erro: 'Chamado nao encontrado' });
-    return null;
-  }
-
-  return chamado;
-}
 
 /**
  * GET /api/chamados
@@ -124,12 +73,20 @@ export async function listar(req: Request, res: Response): Promise<void> {
   res.json({ chamados, total: chamados.length });
 }
 
-/** GET /api/chamados/:id */
+/**
+ * GET /api/chamados/:id
+ *
+ * Devolve o chamado junto com o historico de comentarios: a tela de
+ * detalhe precisa dos dois, e mandar tudo em uma resposta evita o
+ * frontend fazer duas requisicoes em sequencia para montar uma tela.
+ */
 export async function buscarPorId(req: Request, res: Response): Promise<void> {
-  const chamado = await carregarVisivel(req, res);
+  const chamado = await carregarChamadoVisivel(req, res);
   if (!chamado) return;
 
-  res.json({ chamado });
+  const comentarios = await comentarioModel.listarPorChamado(chamado.id);
+
+  res.json({ chamado, comentarios });
 }
 
 /**

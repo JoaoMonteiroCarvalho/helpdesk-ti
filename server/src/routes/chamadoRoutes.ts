@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as chamadoController from '../controllers/chamadoController';
+import comentarioRoutes from './comentarioRoutes';
 import { autenticar, autorizar } from '../middlewares/auth';
 
 const router = Router();
@@ -25,5 +26,10 @@ router.post('/', chamadoController.criar);
 router.patch('/:id/status', autorizar('tecnico'), chamadoController.atualizarStatus);
 router.patch('/:id/assumir', autorizar('tecnico'), chamadoController.assumir);
 router.patch('/:id/tecnico', autorizar('tecnico'), chamadoController.atribuirTecnico);
+
+// Comentarios vivem dentro de um chamado, refletindo o ON DELETE CASCADE
+// do schema. A permissao vem de graca: para comentar e preciso conseguir
+// ver o chamado, e o :id ja esta na URL.
+router.use('/:id/comentarios', comentarioRoutes);
 
 export default router;
