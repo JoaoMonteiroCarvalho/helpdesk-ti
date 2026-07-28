@@ -1,8 +1,11 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import { env } from '../config/env';
+import { Papel } from '../types';
 
-export type Papel = 'tecnico' | 'usuario';
+// Reexportado por conveniencia: quem ja importa deste modulo continua
+// funcionando. A definicao vive em src/types.
+export type { Papel };
 
 // O que guardamos dentro do token. Nunca coloque senha aqui:
 // o payload de um JWT e apenas codificado em base64, nao criptografado.
