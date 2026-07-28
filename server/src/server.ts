@@ -3,6 +3,17 @@ import app from './app';
 import { testarConexao } from './config/database';
 
 async function iniciar(): Promise<void> {
+  // Falha cedo e de forma clara. Sem esta checagem, o servidor subiria
+  // normalmente e so quebraria no primeiro login, com um 500 sem pista.
+  if (!env.JWT_SECRET) {
+    console.error('ERRO: JWT_SECRET nao definido no .env');
+    console.error('Gere um valor com:');
+    console.error(
+      '  node -e "console.log(require(\'crypto\').randomBytes(48).toString(\'hex\'))"'
+    );
+    process.exit(1);
+  }
+
   try {
     await testarConexao();
     console.log('Conexao com o MySQL estabelecida');
