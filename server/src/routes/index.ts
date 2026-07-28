@@ -1,10 +1,11 @@
 import { Router, Request, Response } from 'express';
 import authRoutes from './authRoutes';
+import chamadoRoutes from './chamadoRoutes';
 
 // Ponto unico de montagem das rotas. Conforme voce criar os arquivos
 // de rota, registre-os aqui:
-//   import chamadoRoutes from './chamadoRoutes';
-//   router.use('/chamados', chamadoRoutes);
+//   import comentarioRoutes from './comentarioRoutes';
+//   router.use('/comentarios', comentarioRoutes);
 const router = Router();
 
 router.get('/health', (_req: Request, res: Response) => {
@@ -12,5 +13,6 @@ router.get('/health', (_req: Request, res: Response) => {
 });
 
 router.use('/auth', authRoutes);
+router.use('/chamados', chamadoRoutes);
 
 export default router;
