@@ -1,6 +1,7 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { RotaProtegida } from './auth/RotaProtegida';
 import { Chamados } from './pages/Chamados';
+import { DetalheChamado } from './pages/DetalheChamado';
 import { Login } from './pages/Login';
 import { NovoChamado } from './pages/NovoChamado';
 
@@ -13,6 +14,7 @@ function App() {
       <Route element={<RotaProtegida />}>
         <Route path="/chamados" element={<Chamados />} />
         <Route path="/chamados/novo" element={<NovoChamado />} />
+        <Route path="/chamados/:id" element={<DetalheChamado />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/chamados" replace />} />

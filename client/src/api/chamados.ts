@@ -2,6 +2,7 @@ import { api } from './client';
 import type {
   CategoriaChamado,
   Chamado,
+  Comentario,
   PrioridadeChamado,
   StatusChamado,
 } from '../types/chamado';
@@ -42,4 +43,14 @@ export interface DadosNovoChamado {
 export async function criar(dados: DadosNovoChamado): Promise<Chamado> {
   const resposta = await api.post<{ chamado: Chamado }>('/chamados', dados);
   return resposta.chamado;
+}
+
+interface RespostaDetalhe {
+  chamado: Chamado;
+  comentarios: Comentario[];
+}
+
+/** Busca um chamado com o historico de comentarios, em uma so chamada. */
+export async function buscarPorId(id: number): Promise<RespostaDetalhe> {
+  return api.get<RespostaDetalhe>(`/chamados/${id}`);
 }

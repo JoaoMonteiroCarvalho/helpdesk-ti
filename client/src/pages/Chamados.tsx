@@ -18,7 +18,11 @@ function formatarData(iso: string): string {
 
 function CartaoChamado({ chamado }: { chamado: Chamado }) {
   return (
-    <li className="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+    <li>
+      <Link
+        to={`/chamados/${chamado.id}`}
+        className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-300"
+      >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <h2 className="font-semibold text-slate-900">{chamado.titulo}</h2>
 
@@ -56,6 +60,7 @@ function CartaoChamado({ chamado }: { chamado: Chamado }) {
           </dd>
         </div>
       </dl>
+      </Link>
     </li>
   );
 }

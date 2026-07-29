@@ -34,3 +34,13 @@ export interface Chamado {
   solicitante_email: string;
   tecnico_nome: string | null;
 }
+
+export interface Comentario {
+  id: number;
+  chamado_id: number;
+  autor_id: number;
+  texto: string;
+  criado_em: string;
+  autor_nome: string;
+  autor_papel: 'tecnico' | 'usuario';
+}
