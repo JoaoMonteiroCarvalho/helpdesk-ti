@@ -1,5 +1,5 @@
 import { api } from './client';
-import type { Chamado } from '../types/chamado';
+import type { Chamado, StatusChamado } from '../types/chamado';
 
 interface RespostaListagem {
   chamados: Chamado[];
@@ -14,6 +14,11 @@ interface RespostaListagem {
  * aqui de proposito -- filtrar no navegador significaria ter os dados
  * alheios carregados na memoria, a um DevTools de distancia.
  */
-export async function listar(): Promise<RespostaListagem> {
-  return api.get<RespostaListagem>('/chamados');
+export async function listar(
+  status?: StatusChamado
+): Promise<RespostaListagem> {
+  // O filtro vai para a API em vez de acontecer no navegador: o
+  // endpoint ja aceita ?status= e a coluna tem indice no banco.
+  const query = status ? `?status=${status}` : '';
+  return api.get<RespostaListagem>(`/chamados${query}`);
 }

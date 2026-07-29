@@ -89,16 +89,29 @@ function CartaoChamado({ chamado }: { chamado: Chamado }) {
   );
 }
 
+// undefined = sem filtro (todos)
+const FILTROS: { rotulo: string; valor?: StatusChamado }[] = [
+  { rotulo: 'Todos' },
+  { rotulo: 'Abertos', valor: 'aberto' },
+  { rotulo: 'Em andamento', valor: 'em_andamento' },
+  { rotulo: 'Fechados', valor: 'fechado' },
+];
+
 export function Chamados() {
   const { usuario, sair } = useAuth();
 
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [filtro, setFiltro] = useState<StatusChamado | undefined>(undefined);
 
+  // Refaz a busca sempre que o filtro muda.
   useEffect(() => {
+    setCarregando(true);
+    setErro(null);
+
     chamadosApi
-      .listar()
+      .listar(filtro)
       .then((resposta) => setChamados(resposta.chamados))
       .catch((falha) =>
         setErro(
@@ -108,7 +121,7 @@ export function Chamados() {
         )
       )
       .finally(() => setCarregando(false));
-  }, []);
+  }, [filtro]);
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -145,6 +158,24 @@ export function Chamados() {
           )}
         </div>
 
+        <div className="mt-4 flex flex-wrap gap-2">
+          {FILTROS.map((opcao) => (
+            <button
+              key={opcao.rotulo}
+              type="button"
+              onClick={() => setFiltro(opcao.valor)}
+              className={
+                'rounded-full px-3 py-1.5 text-sm font-medium ' +
+                (filtro === opcao.valor
+                  ? 'bg-slate-900 text-white'
+                  : 'bg-white text-slate-700 hover:bg-slate-50')
+              }
+            >
+              {opcao.rotulo}
+            </button>
+          ))}
+        </div>
+
         {carregando && <p className="mt-8 text-slate-500">Carregando...</p>}
 
         {erro && (
@@ -162,9 +193,11 @@ export function Chamados() {
           <div className="mt-8 rounded-xl border border-dashed border-slate-300 p-10 text-center">
             <p className="text-slate-600">Nenhum chamado por aqui.</p>
             <p className="mt-1 text-sm text-slate-500">
-              {usuario?.papel === 'tecnico'
-                ? 'Nenhum chamado foi aberto ainda.'
-                : 'Voce ainda nao abriu nenhum chamado.'}
+              {filtro
+                ? 'Nenhum chamado com esse status.'
+                : usuario?.papel === 'tecnico'
+                  ? 'Nenhum chamado foi aberto ainda.'
+                  : 'Voce ainda nao abriu nenhum chamado.'}
             </p>
           </div>
         )}
