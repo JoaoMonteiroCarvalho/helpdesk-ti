@@ -1,4 +1,5 @@
 import { Navigate, Route, Routes } from 'react-router-dom';
+import { RotaProtegida } from './auth/RotaProtegida';
 import { useAuth } from './auth/AuthContext';
 import { Login } from './pages/Login';
 
@@ -9,19 +10,11 @@ import { Login } from './pages/Login';
  * listagem de chamados nao existe. Sera substituida por ela.
  */
 function Inicio() {
-  const { usuario, carregando, sair } = useAuth();
+  const { usuario, sair } = useAuth();
 
-  if (carregando) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
-        <p className="text-slate-500">Carregando...</p>
-      </main>
-    );
-  }
-
-  if (!usuario) {
-    return <Navigate to="/login" replace />;
-  }
+  // A RotaProtegida ja garante que ha usuario aqui. Esta linha existe
+  // apenas para o TypeScript estreitar Usuario | null para Usuario.
+  if (!usuario) return null;
 
   return (
     <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
@@ -55,7 +48,12 @@ function App() {
   return (
     <Routes>
       <Route path="/login" element={<Login />} />
-      <Route path="/" element={<Inicio />} />
+
+      {/* Rota de layout sem path: tudo aninhado aqui exige sessao. */}
+      <Route element={<RotaProtegida />}>
+        <Route path="/" element={<Inicio />} />
+      </Route>
+
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>
   );
