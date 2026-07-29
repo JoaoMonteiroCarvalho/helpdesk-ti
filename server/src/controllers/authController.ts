@@ -10,11 +10,6 @@ import { PayloadToken } from '../middlewares/auth';
 // rapido o bastante para nao travar o login.
 const CUSTO_BCRYPT = 10;
 
-// Hash descartavel, usado apenas para gastar tempo quando o e-mail nao
-// existe. Sem isso, responder na hora entregaria quais e-mails estao
-// cadastrados so pela diferenca de tempo da resposta.
-const HASH_FALSO = bcrypt.hashSync('hash-inexistente', CUSTO_BCRYPT);
-
 const TAMANHO_MINIMO_SENHA = 6;
 
 function emailValido(email: string): boolean {
@@ -106,14 +101,9 @@ export async function login(req: Request, res: Response): Promise<void> {
     email.trim().toLowerCase()
   );
 
-  // Compara mesmo sem usuario, contra um hash descartavel, para que o
-  // tempo de resposta nao revele se o e-mail existe.
-  const senhaConfere = await bcrypt.compare(
-    senha,
-    usuario?.senha_hash ?? HASH_FALSO
-  );
-
-  if (!usuario || !senhaConfere) {
+  if (!usuario || !(await bcrypt.compare(senha, usuario.senha_hash))) {
+    // Mesma mensagem para e-mail inexistente e senha errada, para nao
+    // revelar quais e-mails estao cadastrados.
     res.status(401).json({ erro: 'E-mail ou senha invalidos' });
     return;
   }
