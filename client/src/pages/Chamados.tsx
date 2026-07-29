@@ -3,30 +3,8 @@ import { Link } from 'react-router-dom';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
-import type { Chamado, PrioridadeChamado, StatusChamado } from '../types/chamado';
-
-// As classes precisam aparecer escritas por extenso no codigo.
-// O Tailwind gera o CSS lendo o texto dos arquivos no build, entao
-// algo como `bg-${cor}-100` nunca e encontrado e a classe nao existe
-// no CSS final -- o elemento simplesmente aparece sem cor.
-const CORES_STATUS: Record<StatusChamado, string> = {
-  aberto: 'bg-amber-100 text-amber-800',
-  em_andamento: 'bg-blue-100 text-blue-800',
-  fechado: 'bg-emerald-100 text-emerald-800',
-};
-
-const ROTULOS_STATUS: Record<StatusChamado, string> = {
-  aberto: 'Aberto',
-  em_andamento: 'Em andamento',
-  fechado: 'Fechado',
-};
-
-const CORES_PRIORIDADE: Record<PrioridadeChamado, string> = {
-  baixa: 'bg-slate-100 text-slate-700',
-  media: 'bg-sky-100 text-sky-800',
-  alta: 'bg-orange-100 text-orange-800',
-  urgente: 'bg-red-100 text-red-800',
-};
+import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
+import type { Chamado, StatusChamado } from '../types/chamado';
 
 function formatarData(iso: string): string {
   return new Date(iso).toLocaleString('pt-BR', {
@@ -45,16 +23,8 @@ function CartaoChamado({ chamado }: { chamado: Chamado }) {
         <h2 className="font-semibold text-slate-900">{chamado.titulo}</h2>
 
         <div className="flex shrink-0 gap-2">
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CORES_STATUS[chamado.status]}`}
-          >
-            {ROTULOS_STATUS[chamado.status]}
-          </span>
-          <span
-            className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${CORES_PRIORIDADE[chamado.prioridade]}`}
-          >
-            {chamado.prioridade}
-          </span>
+          <EtiquetaStatus status={chamado.status} />
+          <EtiquetaPrioridade prioridade={chamado.prioridade} />
         </div>
       </div>
 
