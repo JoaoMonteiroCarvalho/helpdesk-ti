@@ -1,5 +1,10 @@
 import { api } from './client';
-import type { Chamado, StatusChamado } from '../types/chamado';
+import type {
+  CategoriaChamado,
+  Chamado,
+  PrioridadeChamado,
+  StatusChamado,
+} from '../types/chamado';
 
 interface RespostaListagem {
   chamados: Chamado[];
@@ -21,4 +26,20 @@ export async function listar(
   // endpoint ja aceita ?status= e a coluna tem indice no banco.
   const query = status ? `?status=${status}` : '';
   return api.get<RespostaListagem>(`/chamados${query}`);
+}
+
+export interface DadosNovoChamado {
+  titulo: string;
+  descricao: string;
+  categoria: CategoriaChamado;
+  prioridade: PrioridadeChamado;
+}
+
+/**
+ * Abre um chamado. O solicitante nao vai no corpo: a API usa o id do
+ * token, para ninguem abrir chamado em nome de outra pessoa.
+ */
+export async function criar(dados: DadosNovoChamado): Promise<Chamado> {
+  const resposta = await api.post<{ chamado: Chamado }>('/chamados', dados);
+  return resposta.chamado;
 }

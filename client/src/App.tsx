@@ -2,6 +2,7 @@ import { Navigate, Route, Routes } from 'react-router-dom';
 import { RotaProtegida } from './auth/RotaProtegida';
 import { Chamados } from './pages/Chamados';
 import { Login } from './pages/Login';
+import { NovoChamado } from './pages/NovoChamado';
 
 function App() {
   return (
@@ -11,6 +12,7 @@ function App() {
       {/* Rota de layout sem path: tudo aninhado aqui exige sessao. */}
       <Route element={<RotaProtegida />}>
         <Route path="/chamados" element={<Chamados />} />
+        <Route path="/chamados/novo" element={<NovoChamado />} />
       </Route>
 
       <Route path="/" element={<Navigate to="/chamados" replace />} />

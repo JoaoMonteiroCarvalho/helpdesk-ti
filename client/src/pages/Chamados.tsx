@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
@@ -148,14 +149,23 @@ export function Chamados() {
       </header>
 
       <main className="mx-auto max-w-4xl px-6 py-8">
-        <div className="flex items-baseline justify-between">
-          <h2 className="text-xl font-semibold text-slate-900">Chamados</h2>
-          {!carregando && !erro && (
-            <span className="text-sm text-slate-500">
-              {chamados.length}{' '}
-              {chamados.length === 1 ? 'chamado' : 'chamados'}
-            </span>
-          )}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-baseline gap-3">
+            <h2 className="text-xl font-semibold text-slate-900">Chamados</h2>
+            {!carregando && !erro && (
+              <span className="text-sm text-slate-500">
+                {chamados.length}{' '}
+                {chamados.length === 1 ? 'chamado' : 'chamados'}
+              </span>
+            )}
+          </div>
+
+          <Link
+            to="/chamados/novo"
+            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+          >
+            Novo chamado
+          </Link>
         </div>
 
         <div className="mt-4 flex flex-wrap gap-2">
