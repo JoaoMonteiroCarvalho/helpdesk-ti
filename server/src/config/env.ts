@@ -16,4 +16,10 @@ export const env = {
 
   JWT_SECRET: process.env.JWT_SECRET ?? '',
   JWT_EXPIRES_IN: process.env.JWT_EXPIRES_IN ?? '1d',
+
+  // URL do frontend em producao, para liberar no CORS. Sem essa
+  // variavel, CORS_ORIGIN fica undefined e o app.ts libera qualquer
+  // origem -- o que e aceitavel em desenvolvimento, mas deve ser
+  // configurado ao publicar.
+  CORS_ORIGIN: process.env.CORS_ORIGIN,
 };
