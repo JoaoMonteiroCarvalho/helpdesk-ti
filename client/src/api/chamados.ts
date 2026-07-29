@@ -54,3 +54,15 @@ interface RespostaDetalhe {
 export async function buscarPorId(id: number): Promise<RespostaDetalhe> {
   return api.get<RespostaDetalhe>(`/chamados/${id}`);
 }
+
+/** Adiciona um comentario ao chamado. O autor vem do token, na API. */
+export async function comentar(
+  chamadoId: number,
+  texto: string
+): Promise<Comentario> {
+  const resposta = await api.post<{ comentario: Comentario }>(
+    `/chamados/${chamadoId}/comentarios`,
+    { texto }
+  );
+  return resposta.comentario;
+}

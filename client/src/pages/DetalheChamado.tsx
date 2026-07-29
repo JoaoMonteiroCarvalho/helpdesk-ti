@@ -23,6 +23,10 @@ export function DetalheChamado() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
 
+  const [texto, setTexto] = useState('');
+  const [enviando, setEnviando] = useState(false);
+  const [erroComentario, setErroComentario] = useState<string | null>(null);
+
   useEffect(() => {
     chamadosApi
       .buscarPorId(Number(id))
@@ -39,6 +43,26 @@ export function DetalheChamado() {
       )
       .finally(() => setCarregando(false));
   }, [id]);
+
+  async function aoEnviarComentario(evento: React.FormEvent) {
+    evento.preventDefault();
+    setErroComentario(null);
+    setEnviando(true);
+
+    try {
+      const novo = await chamadosApi.comentar(Number(id), texto);
+      setComentarios((atual) => [...atual, novo]);
+      setTexto('');
+    } catch (falha) {
+      setErroComentario(
+        falha instanceof ErroApi
+          ? falha.message
+          : 'Nao foi possivel enviar o comentario'
+      );
+    } finally {
+      setEnviando(false);
+    }
+  }
 
   return (
     <div className="min-h-screen bg-slate-100">
@@ -135,6 +159,31 @@ export function DetalheChamado() {
                   </li>
                 ))}
               </ul>
+
+              <form onSubmit={aoEnviarComentario} className="mt-4 space-y-2">
+                <textarea
+                  required
+                  rows={3}
+                  value={texto}
+                  onChange={(e) => setTexto(e.target.value)}
+                  placeholder="Escreva um comentario"
+                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+                />
+
+                {erroComentario && (
+                  <p role="alert" className="text-sm text-red-700">
+                    {erroComentario}
+                  </p>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={enviando}
+                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:bg-slate-400"
+                >
+                  {enviando ? 'Enviando...' : 'Comentar'}
+                </button>
+              </form>
             </div>
           </>
         )}
