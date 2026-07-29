@@ -3,75 +3,86 @@ import { Link } from 'react-router-dom';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
-import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
+import { Avatar } from '../components/Avatar';
+import { EtiquetaPrioridade } from '../components/Etiquetas';
 import type { Chamado, StatusChamado } from '../types/chamado';
 
-function formatarData(iso: string): string {
-  return new Date(iso).toLocaleString('pt-BR', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-}
+// Colunas do kanban, na ordem em que aparecem na tela. Usa o status
+// como divisor porque e o dado que ja existe no schema -- o sistema
+// nao tem prazo/SLA para replicar as colunas de um Zendesk real.
+const COLUNAS: { status: StatusChamado; titulo: string; cor: string }[] = [
+  { status: 'aberto', titulo: 'Aberto', cor: 'border-t-amber-400' },
+  { status: 'em_andamento', titulo: 'Em andamento', cor: 'border-t-blue-400' },
+  { status: 'fechado', titulo: 'Fechado', cor: 'border-t-emerald-400' },
+];
 
 function CartaoChamado({ chamado }: { chamado: Chamado }) {
   return (
-    <li>
-      <Link
-        to={`/chamados/${chamado.id}`}
-        className="block rounded-xl border border-slate-200 bg-white p-5 shadow-sm hover:border-slate-300"
-      >
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <h2 className="font-semibold text-slate-900">{chamado.titulo}</h2>
-
-        <div className="flex shrink-0 gap-2">
-          <EtiquetaStatus status={chamado.status} />
-          <EtiquetaPrioridade prioridade={chamado.prioridade} />
-        </div>
+    <Link
+      to={`/chamados/${chamado.id}`}
+      className="block rounded-lg border border-slate-200 bg-white p-4 shadow-sm hover:border-slate-300 hover:shadow"
+    >
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="text-sm font-medium text-slate-900">
+          {chamado.titulo}
+        </h3>
+        <EtiquetaPrioridade prioridade={chamado.prioridade} />
       </div>
 
-      <p className="mt-2 line-clamp-2 text-sm text-slate-600">
+      <p className="mt-1 line-clamp-2 text-xs text-slate-500">
         {chamado.descricao}
       </p>
 
-      <dl className="mt-4 flex flex-wrap gap-x-6 gap-y-1 text-xs text-slate-500">
-        <div className="flex gap-1">
-          <dt>Aberto por</dt>
-          <dd className="font-medium text-slate-700">
-            {chamado.solicitante_nome}
-          </dd>
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex items-center gap-1.5">
+          <Avatar nome={chamado.solicitante_nome} />
+          {chamado.tecnico_nome && (
+            <>
+              <span className="text-xs text-slate-300">→</span>
+              <Avatar nome={chamado.tecnico_nome} />
+            </>
+          )}
         </div>
-        <div className="flex gap-1">
-          <dt>Tecnico</dt>
-          <dd className="font-medium text-slate-700">
-            {chamado.tecnico_nome ?? 'nao atribuido'}
-          </dd>
-        </div>
-        <div className="flex gap-1">
-          <dt>Categoria</dt>
-          <dd className="font-medium text-slate-700">{chamado.categoria}</dd>
-        </div>
-        <div className="flex gap-1">
-          <dt>Criado em</dt>
-          <dd className="font-medium text-slate-700">
-            {formatarData(chamado.criado_em)}
-          </dd>
-        </div>
-      </dl>
-      </Link>
-    </li>
+
+        {!!chamado.total_comentarios && (
+          <span className="flex items-center gap-1 text-xs text-slate-400">
+            💬 {chamado.total_comentarios}
+          </span>
+        )}
+      </div>
+    </Link>
   );
 }
 
-// undefined = sem filtro (todos)
-const FILTROS: { rotulo: string; valor?: StatusChamado }[] = [
-  { rotulo: 'Todos' },
-  { rotulo: 'Abertos', valor: 'aberto' },
-  { rotulo: 'Em andamento', valor: 'em_andamento' },
-  { rotulo: 'Fechados', valor: 'fechado' },
-];
+function Coluna({
+  titulo,
+  cor,
+  chamados,
+}: {
+  titulo: string;
+  cor: string;
+  chamados: Chamado[];
+}) {
+  return (
+    <div className="flex-1 min-w-[280px]">
+      <div className={`flex items-center justify-between border-t-4 ${cor} rounded-t-lg bg-white px-4 py-3 shadow-sm`}>
+        <h2 className="text-sm font-semibold text-slate-700">{titulo}</h2>
+        <span className="text-xs text-slate-400">{chamados.length}</span>
+      </div>
+
+      <div className="mt-3 space-y-3">
+        {chamados.length === 0 && (
+          <p className="rounded-lg border border-dashed border-slate-200 p-4 text-center text-xs text-slate-400">
+            Nenhum chamado
+          </p>
+        )}
+        {chamados.map((chamado) => (
+          <CartaoChamado key={chamado.id} chamado={chamado} />
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export function Chamados() {
   const { usuario, sair } = useAuth();
@@ -79,15 +90,10 @@ export function Chamados() {
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
-  const [filtro, setFiltro] = useState<StatusChamado | undefined>(undefined);
 
-  // Refaz a busca sempre que o filtro muda.
   useEffect(() => {
-    setCarregando(true);
-    setErro(null);
-
     chamadosApi
-      .listar(filtro)
+      .listar()
       .then((resposta) => setChamados(resposta.chamados))
       .catch((falha) =>
         setErro(
@@ -97,12 +103,12 @@ export function Chamados() {
         )
       )
       .finally(() => setCarregando(false));
-  }, [filtro]);
+  }, []);
 
   return (
-    <div className="min-h-screen bg-slate-100">
+    <div className="min-h-screen bg-slate-50">
       <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-4xl flex-wrap items-center justify-between gap-3 px-6 py-4">
+        <div className="mx-auto flex max-w-6xl flex-wrap items-center justify-between gap-3 px-6 py-4">
           <div>
             <h1 className="text-lg font-bold text-slate-900">helpdesk-ti</h1>
             <p className="text-sm text-slate-500">
@@ -113,86 +119,47 @@ export function Chamados() {
             </p>
           </div>
 
-          <button
-            type="button"
-            onClick={sair}
-            className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
-          >
-            Sair
-          </button>
+          <div className="flex items-center gap-3">
+            <Link
+              to="/chamados/novo"
+              className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
+            >
+              Novo chamado
+            </Link>
+            <button
+              type="button"
+              onClick={sair}
+              className="rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+            >
+              Sair
+            </button>
+          </div>
         </div>
       </header>
 
-      <main className="mx-auto max-w-4xl px-6 py-8">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <div className="flex items-baseline gap-3">
-            <h2 className="text-xl font-semibold text-slate-900">Chamados</h2>
-            {!carregando && !erro && (
-              <span className="text-sm text-slate-500">
-                {chamados.length}{' '}
-                {chamados.length === 1 ? 'chamado' : 'chamados'}
-              </span>
-            )}
-          </div>
-
-          <Link
-            to="/chamados/novo"
-            className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700"
-          >
-            Novo chamado
-          </Link>
-        </div>
-
-        <div className="mt-4 flex flex-wrap gap-2">
-          {FILTROS.map((opcao) => (
-            <button
-              key={opcao.rotulo}
-              type="button"
-              onClick={() => setFiltro(opcao.valor)}
-              className={
-                'rounded-full px-3 py-1.5 text-sm font-medium ' +
-                (filtro === opcao.valor
-                  ? 'bg-slate-900 text-white'
-                  : 'bg-white text-slate-700 hover:bg-slate-50')
-              }
-            >
-              {opcao.rotulo}
-            </button>
-          ))}
-        </div>
-
-        {carregando && <p className="mt-8 text-slate-500">Carregando...</p>}
+      <main className="mx-auto max-w-6xl px-6 py-8">
+        {carregando && <p className="text-slate-500">Carregando...</p>}
 
         {erro && (
           <p
             role="alert"
-            className="mt-8 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
           >
             {erro}
           </p>
         )}
 
-        {/* Estado vazio explicito: sem ele, quem nao tem chamado nenhum
-            veria uma pagina em branco sem saber se quebrou. */}
-        {!carregando && !erro && chamados.length === 0 && (
-          <div className="mt-8 rounded-xl border border-dashed border-slate-300 p-10 text-center">
-            <p className="text-slate-600">Nenhum chamado por aqui.</p>
-            <p className="mt-1 text-sm text-slate-500">
-              {filtro
-                ? 'Nenhum chamado com esse status.'
-                : usuario?.papel === 'tecnico'
-                  ? 'Nenhum chamado foi aberto ainda.'
-                  : 'Voce ainda nao abriu nenhum chamado.'}
-            </p>
-          </div>
-        )}
-
-        {!carregando && !erro && chamados.length > 0 && (
-          <ul className="mt-6 space-y-3">
-            {chamados.map((chamado) => (
-              <CartaoChamado key={chamado.id} chamado={chamado} />
+        {!carregando && !erro && (
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {COLUNAS.map((coluna) => (
+              <Coluna
+                key={coluna.status}
+                titulo={coluna.titulo}
+                cor={coluna.cor}
+                chamados={chamados.filter((c) => c.status === coluna.status)}
+              />
             ))}
-          </ul>
+          </div>
         )}
       </main>
     </div>

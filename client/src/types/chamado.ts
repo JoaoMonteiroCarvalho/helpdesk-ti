@@ -33,6 +33,8 @@ export interface Chamado {
   solicitante_nome: string;
   solicitante_email: string;
   tecnico_nome: string | null;
+  // So preenchido na listagem (ver chamadoModel.listar no backend).
+  total_comentarios?: number;
 }
 
 export interface Comentario {
