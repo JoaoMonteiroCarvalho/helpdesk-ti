@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   DndContext,
+  DragOverlay,
+  PointerSensor,
   useDraggable,
   useDroppable,
+  useSensor,
+  useSensors,
   type DragEndEvent,
+  type DragStartEvent,
 } from '@dnd-kit/core';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
@@ -26,6 +31,60 @@ const TITULOS_VISTA: Record<string, string> = {
   semTecnico: 'Chamados sem tecnico',
 };
 
+/** So o miolo visual do card, sem nada de drag: reusado no card normal
+ * e na copia flutuante do DragOverlay. */
+function ConteudoCartao({ chamado }: { chamado: Chamado }) {
+  const fechado = chamado.status === 'fechado';
+
+  return (
+    <>
+      <div className="flex items-start justify-between gap-2">
+        <h3
+          className={
+            'text-sm font-semibold leading-snug ' +
+            (fechado ? 'text-tinta-suave line-through' : 'text-tinta')
+          }
+        >
+          {chamado.titulo}
+        </h3>
+        <span className="shrink-0 font-mono text-xs text-tinta-suave">
+          #{chamado.id}
+        </span>
+      </div>
+
+      <p
+        className={
+          'mt-1 line-clamp-2 text-xs leading-relaxed ' +
+          (fechado ? 'text-tinta-suave/60' : 'text-tinta-suave')
+        }
+      >
+        {chamado.descricao}
+      </p>
+
+      <div className="mt-3 flex items-center justify-between">
+        <div className="flex -space-x-1.5">
+          <Avatar nome={chamado.solicitante_nome} comAnel />
+          {chamado.tecnico_nome && (
+            <Avatar nome={chamado.tecnico_nome} comAnel />
+          )}
+        </div>
+
+        <div className="flex items-center gap-2">
+          <EtiquetaPrioridade prioridade={chamado.prioridade} />
+          {!!chamado.total_comentarios && (
+            <span className="flex items-center gap-1 text-tinta-suave">
+              <IconeComentario className="h-3.5 w-3.5" />
+              <span className="text-xs font-medium">
+                {chamado.total_comentarios}
+              </span>
+            </span>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
 function CartaoChamado({
   chamado,
   arrastavel,
@@ -35,84 +94,64 @@ function CartaoChamado({
 }) {
   // disabled vem da tela: usuario comum nao pode mudar status (a API
   // ja recusa com 403), entao nem oferecemos o arrasto para ele.
-  const { attributes, listeners, setNodeRef, transform, isDragging } =
-    useDraggable({ id: chamado.id, disabled: !arrastavel });
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({
+    id: chamado.id,
+    disabled: !arrastavel,
+  });
+  const navegar = useNavigate();
 
-  const fechado = chamado.status === 'fechado';
+  // Guarda se o arraste chegou a mover o card. O duplo clique dispara
+  // no pointerup, momento em que isDragging ja voltou a false -- entao
+  // checar isDragging direto no evento nao bloqueia a navegacao apos
+  // um arraste que termina em area vazia. A ref sobrevive a esse
+  // intervalo, garantindo que arrastar nunca abre o chamado.
+  const chegouAMover = useRef(false);
+  if (isDragging) chegouAMover.current = true;
 
-  const estilo = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-        zIndex: 10,
-      }
-    : undefined;
+  function aoClicar() {
+    if (chegouAMover.current) {
+      chegouAMover.current = false;
+      return;
+    }
+    navegar(`/chamados/${chamado.id}`);
+  }
 
   return (
     <div
       ref={setNodeRef}
-      style={estilo}
+      style={{ touchAction: arrastavel ? 'none' : undefined }}
       {...listeners}
       {...attributes}
+      // Enquanto arrasta, o original fica invisivel mas continua
+      // ocupando o espaco (visibility, nao display): assim o layout da
+      // coluna nao pula, e quem se move de verdade e o DragOverlay, que
+      // vive fora do fluxo do documento -- por isso ele nao faz a
+      // pagina crescer nem a barra de rolagem aparecer durante o
+      // arraste, diferente de mover o proprio card com transform.
       className={
-        'rounded-xl border bg-white p-3.5 transition-all duration-150 ' +
+        'rounded-xl border bg-white p-3.5 ' +
         (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
         (isDragging
-          ? 'border-tinta opacity-60 shadow-md'
-          : 'border-linha hover:border-linha-forte hover:shadow-sm')
+          ? 'invisible'
+          : 'border-linha transition-[border-color,box-shadow] duration-150 hover:border-linha-forte hover:shadow-sm')
       }
     >
-      <Link
-        to={`/chamados/${chamado.id}`}
-        // Se comecar a arrastar, o clique nao deve navegar: dnd-kit so
-        // dispara o drag apos um pequeno deslocamento do mouse, entao
-        // um clique parado ainda funciona como link normalmente.
-        onClick={(evento) => isDragging && evento.preventDefault()}
+      <div
+        role="button"
+        tabIndex={0}
+        // Duplo clique abre o chamado, nao um clique simples: assim um
+        // clique isolado no card nao dispara navegacao por acidente.
+        onDoubleClick={aoClicar}
+        onKeyDown={(evento) => {
+          if (evento.key === 'Enter' || evento.key === ' ') {
+            evento.preventDefault();
+            aoClicar();
+          }
+        }}
         className="block"
       >
-        <div className="flex items-start justify-between gap-2">
-          <h3
-            className={
-              'text-sm font-semibold leading-snug ' +
-              (fechado ? 'text-tinta-suave line-through' : 'text-tinta')
-            }
-          >
-            {chamado.titulo}
-          </h3>
-          <span className="shrink-0 font-mono text-xs text-tinta-suave">
-            #{chamado.id}
-          </span>
-        </div>
-
-        <p
-          className={
-            'mt-1 line-clamp-2 text-xs leading-relaxed ' +
-            (fechado ? 'text-tinta-suave/60' : 'text-tinta-suave')
-          }
-        >
-          {chamado.descricao}
-        </p>
-
-        <div className="mt-3 flex items-center justify-between">
-          <div className="flex -space-x-1.5">
-            <Avatar nome={chamado.solicitante_nome} comAnel />
-            {chamado.tecnico_nome && (
-              <Avatar nome={chamado.tecnico_nome} comAnel />
-            )}
-          </div>
-
-          <div className="flex items-center gap-2">
-            <EtiquetaPrioridade prioridade={chamado.prioridade} />
-            {!!chamado.total_comentarios && (
-              <span className="flex items-center gap-1 text-tinta-suave">
-                <IconeComentario className="h-3.5 w-3.5" />
-                <span className="text-xs font-medium">
-                  {chamado.total_comentarios}
-                </span>
-              </span>
-            )}
-          </div>
-        </div>
-      </Link>
+        <ConteudoCartao chamado={chamado} />
+      </div>
     </div>
   );
 }
@@ -131,8 +170,11 @@ function Coluna({
   return (
     <div
       ref={setNodeRef}
+      // flex-1 com min-w: as colunas dividem igualmente o espaco
+      // disponivel em telas largas, mas nao encolhem alem do minimo em
+      // telas estreitas -- ai o overflow-x-auto do quadro assume.
       className={
-        'w-[300px] shrink-0 rounded-xl p-1 transition-colors ' +
+        'min-w-[280px] flex-1 rounded-xl p-1 transition-colors ' +
         (isOver ? 'bg-realce' : '')
       }
     >
@@ -209,7 +251,19 @@ export function Chamados() {
     return chamados.filter((c) => c.titulo.toLowerCase().includes(termo));
   }, [chamados, busca]);
 
+  // Chamado sendo arrastado no momento, para desenhar no DragOverlay.
+  const [chamadoArrastado, setChamadoArrastado] = useState<Chamado | null>(
+    null
+  );
+
+  function aoComecarArraste(evento: DragStartEvent) {
+    const id = Number(evento.active.id);
+    setChamadoArrastado(chamados.find((c) => c.id === id) ?? null);
+  }
+
   async function aoSoltar(evento: DragEndEvent) {
+    setChamadoArrastado(null);
+
     const { active, over } = evento;
     if (!over) return;
 
@@ -241,6 +295,13 @@ export function Chamados() {
   }
 
   const podeArrastar = usuario?.papel === 'tecnico';
+
+  // activationConstraint com distancia minima: sem isso, qualquer
+  // clique no card pode ser interpretado como inicio de arraste,
+  // competindo com a navegacao para o detalhe do chamado.
+  const sensores = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 4 } })
+  );
 
   return (
     <div className="min-h-screen bg-white">
@@ -287,8 +348,17 @@ export function Chamados() {
           </p>
         )}
 
+        {/* autoScroll desligado: por padrao o dnd-kit rola a pagina e o
+            quadro (overflow-x-auto abaixo) quando o ponteiro chega perto
+            da borda durante o arraste. Aqui o card deve so se mover
+            visualmente entre as colunas, sem disparar scroll nenhum. */}
         {!carregando && !erro && (
-          <DndContext onDragEnd={aoSoltar}>
+          <DndContext
+            sensors={sensores}
+            autoScroll={false}
+            onDragStart={aoComecarArraste}
+            onDragEnd={aoSoltar}
+          >
             <div className="flex gap-3 overflow-x-auto pb-4">
               {STATUS_EM_ORDEM.map((status) => (
                 <Coluna
@@ -299,6 +369,19 @@ export function Chamados() {
                 />
               ))}
             </div>
+
+            {/* Copia flutuante do card durante o arraste, fora do fluxo
+                do documento (position: fixed internamente ao dnd-kit).
+                Sem ela, o card original precisaria se mover com
+                transform dentro do proprio layout, o que fazia a
+                coluna crescer e a barra de rolagem aparecer. */}
+            <DragOverlay>
+              {chamadoArrastado && (
+                <div className="w-[284px] rounded-xl border border-tinta bg-white p-3.5 shadow-lg">
+                  <ConteudoCartao chamado={chamadoArrastado} />
+                </div>
+              )}
+            </DragOverlay>
           </DndContext>
         )}
       </main>
