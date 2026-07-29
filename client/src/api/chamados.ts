@@ -12,6 +12,14 @@ interface RespostaListagem {
   total: number;
 }
 
+export interface FiltrosListagem {
+  status?: StatusChamado;
+  /** Chamados atendidos por este tecnico. */
+  tecnicoId?: number;
+  /** true = so chamados ainda sem tecnico atribuido. */
+  semTecnico?: boolean;
+}
+
 /**
  * Lista os chamados visiveis para quem esta autenticado.
  *
@@ -21,12 +29,17 @@ interface RespostaListagem {
  * alheios carregados na memoria, a um DevTools de distancia.
  */
 export async function listar(
-  status?: StatusChamado
+  filtros: FiltrosListagem = {}
 ): Promise<RespostaListagem> {
-  // O filtro vai para a API em vez de acontecer no navegador: o
-  // endpoint ja aceita ?status= e a coluna tem indice no banco.
-  const query = status ? `?status=${status}` : '';
-  return api.get<RespostaListagem>(`/chamados${query}`);
+  const params = new URLSearchParams();
+  if (filtros.status) params.set('status', filtros.status);
+  if (filtros.tecnicoId !== undefined) {
+    params.set('tecnico_id', String(filtros.tecnicoId));
+  }
+  if (filtros.semTecnico) params.set('semTecnico', 'true');
+
+  const query = params.toString();
+  return api.get<RespostaListagem>(`/chamados${query ? `?${query}` : ''}`);
 }
 
 export interface DadosNovoChamado {
