@@ -1,56 +1,64 @@
-import { useEffect, useState } from 'react'
+import { Navigate, Route, Routes } from 'react-router-dom';
+import { useAuth } from './auth/AuthContext';
+import { Login } from './pages/Login';
 
-type EstadoApi =
-  | { situacao: 'carregando' }
-  | { situacao: 'ok'; mensagem: string }
-  | { situacao: 'erro'; mensagem: string }
+/**
+ * Tela inicial TEMPORARIA.
+ *
+ * Serve para confirmar visualmente que a sessao funciona enquanto a
+ * listagem de chamados nao existe. Sera substituida por ela.
+ */
+function Inicio() {
+  const { usuario, carregando, sair } = useAuth();
 
-function App() {
-  const [api, setApi] = useState<EstadoApi>({ situacao: 'carregando' })
+  if (carregando) {
+    return (
+      <main className="flex min-h-screen items-center justify-center bg-slate-100">
+        <p className="text-slate-500">Carregando...</p>
+      </main>
+    );
+  }
 
-  useEffect(() => {
-    // /api e redirecionado para http://localhost:3000 pelo proxy do Vite
-    // (veja vite.config.ts).
-    fetch('/api/health')
-      .then((r) => r.json())
-      .then((dados) => setApi({ situacao: 'ok', mensagem: dados.message }))
-      .catch(() => setApi({ situacao: 'erro', mensagem: 'Backend offline' }))
-  }, [])
+  if (!usuario) {
+    return <Navigate to="/login" replace />;
+  }
 
   return (
-    <main className="min-h-screen bg-slate-100 flex items-center justify-center p-6">
+    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
       <div className="w-full max-w-md rounded-xl bg-white p-8 shadow-lg">
         <h1 className="text-2xl font-bold text-slate-900">helpdesk-ti</h1>
-        <p className="mt-1 text-slate-600">Sistema de gestao de chamados</p>
 
         <div className="mt-6 rounded-lg border border-slate-200 p-4">
           <span className="text-sm font-medium text-slate-500">
-            Status do backend
+            Sessao ativa
           </span>
-
-          <p className="mt-2 flex items-center gap-2">
-            <span
-              className={
-                'inline-block h-2.5 w-2.5 rounded-full ' +
-                (api.situacao === 'ok'
-                  ? 'bg-green-500'
-                  : api.situacao === 'erro'
-                    ? 'bg-red-500'
-                    : 'bg-amber-400')
-              }
-            />
-            <span className="text-slate-800">
-              {api.situacao === 'carregando' ? 'Verificando...' : api.mensagem}
-            </span>
-          </p>
+          <p className="mt-2 text-slate-900">{usuario.nome}</p>
+          <p className="text-sm text-slate-600">{usuario.email}</p>
+          <span className="mt-2 inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
+            {usuario.papel}
+          </span>
         </div>
 
-        <p className="mt-6 text-xs text-slate-400">
-          Se este cartao esta estilizado, o Tailwind CSS esta funcionando.
-        </p>
+        <button
+          type="button"
+          onClick={sair}
+          className="mt-6 w-full rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
+        >
+          Sair
+        </button>
       </div>
     </main>
-  )
+  );
 }
 
-export default App
+function App() {
+  return (
+    <Routes>
+      <Route path="/login" element={<Login />} />
+      <Route path="/" element={<Inicio />} />
+      <Route path="*" element={<Navigate to="/" replace />} />
+    </Routes>
+  );
+}
+
+export default App;
