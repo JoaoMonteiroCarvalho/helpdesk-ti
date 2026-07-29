@@ -58,8 +58,25 @@ export async function listar(
 
   const where = condicoes.length ? `WHERE ${condicoes.join(' AND ')}` : '';
 
-  // Mais recentes primeiro: e o indice (status, criado_em) do schema.
-  const sql = `${SELECT_DETALHADO} ${where} ORDER BY ch.criado_em DESC`;
+  // LEFT JOIN com subconsulta agrupada por chamado_id: traz a contagem
+  // de comentarios sem rodar uma consulta por chamado (problema N+1).
+  const sql = `
+    SELECT ch.*,
+           s.nome  AS solicitante_nome,
+           s.email AS solicitante_email,
+           t.nome  AS tecnico_nome,
+           COALESCE(c.total, 0) AS total_comentarios
+      FROM chamados ch
+      JOIN usuarios s ON s.id = ch.solicitante_id
+      LEFT JOIN usuarios t ON t.id = ch.tecnico_id
+      LEFT JOIN (
+        SELECT chamado_id, COUNT(*) AS total
+          FROM comentarios
+         GROUP BY chamado_id
+      ) c ON c.chamado_id = ch.id
+      ${where}
+     ORDER BY ch.criado_em DESC
+  `;
 
   const [linhas] = await pool.execute<RowDataPacket[]>(sql, valores);
   return linhas as ChamadoDetalhado[];

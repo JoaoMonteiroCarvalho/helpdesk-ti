@@ -98,6 +98,11 @@ export interface ChamadoDetalhado extends Chamado {
   solicitante_nome: string;
   solicitante_email: string;
   tecnico_nome: string | null;
+  /**
+   * So preenchido na listagem, para o card mostrar quantos comentarios
+   * o chamado tem sem precisar buscar a lista inteira.
+   */
+  total_comentarios?: number;
 }
 
 export interface DadosNovoChamado {
