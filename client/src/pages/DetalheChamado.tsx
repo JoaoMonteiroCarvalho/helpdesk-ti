@@ -2,8 +2,15 @@ import { useEffect, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
+import { useAuth } from '../auth/AuthContext';
 import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
-import type { Chamado, Comentario } from '../types/chamado';
+import type { Chamado, Comentario, StatusChamado } from '../types/chamado';
+
+const OPCOES_STATUS: { valor: StatusChamado; rotulo: string }[] = [
+  { valor: 'aberto', rotulo: 'Aberto' },
+  { valor: 'em_andamento', rotulo: 'Em andamento' },
+  { valor: 'fechado', rotulo: 'Fechado' },
+];
 
 function formatarData(iso: string): string {
   return new Date(iso).toLocaleString('pt-BR', {
@@ -17,8 +24,10 @@ function formatarData(iso: string): string {
 
 export function DetalheChamado() {
   const { id } = useParams();
+  const { usuario } = useAuth();
 
   const [chamado, setChamado] = useState<Chamado | null>(null);
+  const [erroAcao, setErroAcao] = useState<string | null>(null);
   const [comentarios, setComentarios] = useState<Comentario[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
@@ -43,6 +52,28 @@ export function DetalheChamado() {
       )
       .finally(() => setCarregando(false));
   }, [id]);
+
+  async function aoAssumir() {
+    setErroAcao(null);
+    try {
+      setChamado(await chamadosApi.assumir(Number(id)));
+    } catch (falha) {
+      setErroAcao(
+        falha instanceof ErroApi ? falha.message : 'Nao foi possivel assumir'
+      );
+    }
+  }
+
+  async function aoMudarStatus(novoStatus: StatusChamado) {
+    setErroAcao(null);
+    try {
+      setChamado(await chamadosApi.atualizarStatus(Number(id), novoStatus));
+    } catch (falha) {
+      setErroAcao(
+        falha instanceof ErroApi ? falha.message : 'Nao foi possivel atualizar'
+      );
+    }
+  }
 
   async function aoEnviarComentario(evento: React.FormEvent) {
     evento.preventDefault();
@@ -126,6 +157,43 @@ export function DetalheChamado() {
                   </dd>
                 </div>
               </dl>
+
+              {usuario?.papel === 'tecnico' && (
+                <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+                  {!chamado.tecnico_nome && (
+                    <button
+                      type="button"
+                      onClick={aoAssumir}
+                      className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+                    >
+                      Assumir chamado
+                    </button>
+                  )}
+
+                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                    Status
+                    <select
+                      value={chamado.status}
+                      onChange={(e) =>
+                        aoMudarStatus(e.target.value as StatusChamado)
+                      }
+                      className="rounded-lg border border-slate-300 bg-white px-2 py-1.5"
+                    >
+                      {OPCOES_STATUS.map((opcao) => (
+                        <option key={opcao.valor} value={opcao.valor}>
+                          {opcao.rotulo}
+                        </option>
+                      ))}
+                    </select>
+                  </label>
+                </div>
+              )}
+
+              {erroAcao && (
+                <p role="alert" className="mt-3 text-sm text-red-700">
+                  {erroAcao}
+                </p>
+              )}
             </div>
 
             <div className="mt-6">

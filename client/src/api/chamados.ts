@@ -55,6 +55,26 @@ export async function buscarPorId(id: number): Promise<RespostaDetalhe> {
   return api.get<RespostaDetalhe>(`/chamados/${id}`);
 }
 
+/** Tecnico assume o chamado. So funciona se ainda nao tiver tecnico. */
+export async function assumir(id: number): Promise<Chamado> {
+  const resposta = await api.patch<{ chamado: Chamado }>(
+    `/chamados/${id}/assumir`
+  );
+  return resposta.chamado;
+}
+
+/** Tecnico altera o status do chamado. */
+export async function atualizarStatus(
+  id: number,
+  status: StatusChamado
+): Promise<Chamado> {
+  const resposta = await api.patch<{ chamado: Chamado }>(
+    `/chamados/${id}/status`,
+    { status }
+  );
+  return resposta.chamado;
+}
+
 /** Adiciona um comentario ao chamado. O autor vem do token, na API. */
 export async function comentar(
   chamadoId: number,
