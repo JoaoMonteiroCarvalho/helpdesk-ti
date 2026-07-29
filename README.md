@@ -41,15 +41,40 @@ helpdesk-ti/
 
 ## Como rodar
 
-**Backend**
+Pré-requisitos: Node.js e um servidor MySQL rodando localmente.
+
+**1. Backend**
 
 ```bash
 cd server
 npm install
+```
+
+Copie o `.env.example` para `.env` e preencha as variáveis (credenciais do MySQL e um `JWT_SECRET`):
+
+```bash
+cp .env.example .env        # Linux/Mac
+Copy-Item .env.example .env # Windows (PowerShell)
+```
+
+Crie o banco e as tabelas, depois popule com dados de exemplo:
+
+```bash
+mysql -u seu_usuario -p < database/schema.sql
+mysql -u seu_usuario -p < database/seed.sql
+```
+
+> No Windows, se `mysql` não for reconhecido, use o caminho completo do executável (algo como `"C:\Program Files\MySQL\MySQL Server X.Y\bin\mysql.exe"`) ou adicione a pasta `bin` do MySQL ao PATH.
+
+Suba o servidor:
+
+```bash
 npm run dev
 ```
 
-**Frontend**
+A API sobe em `http://localhost:3000`.
+
+**2. Frontend**
 
 ```bash
 cd client
@@ -57,9 +82,20 @@ npm install
 npm run dev
 ```
 
+A aplicação sobe em `http://localhost:5173` (o Vite já usa proxy para a API em desenvolvimento).
+
+**3. Login de teste**
+
+O `seed.sql` cria usuários prontos, todos com senha `senha123`:
+
+| E-mail | Papel |
+|---|---|
+| `ana.tecnica@helpdesk.local` | técnico |
+| `carla@helpdesk.local` | usuário |
+
 ## Status
 
-Em desenvolvimento.
+Funcionalidades principais implementadas: autenticação, abertura e listagem de chamados com filtro por status, atribuição a técnico, atualização de status e comentários.
 
 ## Autor
 
