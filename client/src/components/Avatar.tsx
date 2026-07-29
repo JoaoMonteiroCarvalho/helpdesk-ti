@@ -1,16 +1,14 @@
-// Paleta fixa: a cor de cada pessoa e escolhida a partir do nome, entao
-// a mesma pessoa sempre aparece com a mesma cor em qualquer tela.
+// Paleta neutra e discreta, coerente com o layout monocromatico: nao
+// sao cores vivas, sao tons de cinza-azulado que variam pouco entre
+// si. A cor de cada pessoa vem do nome, entao ela e sempre a mesma em
+// qualquer tela.
 const CORES = [
-  'bg-rose-500',
-  'bg-orange-500',
-  'bg-amber-500',
-  'bg-lime-500',
-  'bg-emerald-500',
-  'bg-teal-500',
-  'bg-sky-500',
-  'bg-indigo-500',
-  'bg-violet-500',
-  'bg-fuchsia-500',
+  'bg-slate-700',
+  'bg-zinc-700',
+  'bg-stone-700',
+  'bg-neutral-700',
+  'bg-gray-600',
+  'bg-slate-500',
 ];
 
 function corPorNome(nome: string): string {
@@ -29,17 +27,23 @@ function iniciais(nome: string): string {
 export function Avatar({
   nome,
   tamanho = 'sm',
+  comAnel = false,
 }: {
   nome: string;
   tamanho?: 'sm' | 'md';
+  /** Anel branco ao redor: usado quando avatares ficam sobrepostos. */
+  comAnel?: boolean;
 }) {
   const classesTamanho =
-    tamanho === 'md' ? 'h-9 w-9 text-sm' : 'h-6 w-6 text-[10px]';
+    tamanho === 'md' ? 'h-9 w-9 text-xs' : 'h-6 w-6 text-[10px]';
 
   return (
     <span
       title={nome}
-      className={`inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${corPorNome(nome)} ${classesTamanho}`}
+      className={
+        `inline-flex shrink-0 items-center justify-center rounded-full font-semibold text-white ${corPorNome(nome)} ${classesTamanho} ` +
+        (comAnel ? 'ring-2 ring-white' : '')
+      }
     >
       {iniciais(nome)}
     </span>

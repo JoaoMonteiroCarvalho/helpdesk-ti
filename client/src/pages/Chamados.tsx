@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import {
   DndContext,
@@ -10,21 +10,15 @@ import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { Avatar } from '../components/Avatar';
-import { EtiquetaPrioridade } from '../components/Etiquetas';
+import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
+import { IconeBusca, IconeComentario } from '../components/Icones';
 import type { Chamado, StatusChamado } from '../types/chamado';
 
 // Colunas do kanban, na ordem em que aparecem na tela. Usa o status
 // como divisor porque e o dado que ja existe no schema -- o sistema
 // nao tem prazo/SLA para replicar as colunas de um Zendesk real.
-//
-// As classes de cor precisam aparecer por extenso: o Tailwind gera o
-// CSS lendo o texto dos arquivos, e uma classe montada em tempo de
-// execucao nunca seria encontrada.
-const COLUNAS: { status: StatusChamado; titulo: string; cabecalho: string }[] = [
-  { status: 'aberto', titulo: 'Aberto', cabecalho: 'bg-amber-400' },
-  { status: 'em_andamento', titulo: 'Em andamento', cabecalho: 'bg-blue-400' },
-  { status: 'fechado', titulo: 'Fechado', cabecalho: 'bg-emerald-400' },
-];
+// O rotulo de cada uma vem de EtiquetaStatus, entao aqui so a ordem.
+const STATUS_EM_ORDEM: StatusChamado[] = ['aberto', 'em_andamento', 'fechado'];
 
 const TITULOS_VISTA: Record<string, string> = {
   '': 'Todos os chamados',
@@ -44,6 +38,8 @@ function CartaoChamado({
   const { attributes, listeners, setNodeRef, transform, isDragging } =
     useDraggable({ id: chamado.id, disabled: !arrastavel });
 
+  const fechado = chamado.status === 'fechado';
+
   const estilo = transform
     ? {
         transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
@@ -58,9 +54,11 @@ function CartaoChamado({
       {...listeners}
       {...attributes}
       className={
-        'rounded-xl bg-white p-3.5 shadow-sm transition-shadow duration-150 ' +
+        'rounded-xl border bg-white p-3.5 transition-all duration-150 ' +
         (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
-        (isDragging ? 'opacity-50 shadow-lg' : 'hover:shadow-md')
+        (isDragging
+          ? 'border-tinta opacity-60 shadow-md'
+          : 'border-linha hover:border-linha-forte hover:shadow-sm')
       }
     >
       <Link
@@ -72,32 +70,47 @@ function CartaoChamado({
         className="block"
       >
         <div className="flex items-start justify-between gap-2">
-          <h3 className="text-sm font-medium text-slate-900">
+          <h3
+            className={
+              'text-sm font-semibold leading-snug ' +
+              (fechado ? 'text-tinta-suave line-through' : 'text-tinta')
+            }
+          >
             {chamado.titulo}
           </h3>
-          <EtiquetaPrioridade prioridade={chamado.prioridade} />
+          <span className="shrink-0 font-mono text-xs text-tinta-suave">
+            #{chamado.id}
+          </span>
         </div>
 
-        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+        <p
+          className={
+            'mt-1 line-clamp-2 text-xs leading-relaxed ' +
+            (fechado ? 'text-tinta-suave/60' : 'text-tinta-suave')
+          }
+        >
           {chamado.descricao}
         </p>
 
         <div className="mt-3 flex items-center justify-between">
-          <div className="flex items-center gap-1.5">
-            <Avatar nome={chamado.solicitante_nome} />
+          <div className="flex -space-x-1.5">
+            <Avatar nome={chamado.solicitante_nome} comAnel />
             {chamado.tecnico_nome && (
-              <>
-                <span className="text-xs text-slate-300">→</span>
-                <Avatar nome={chamado.tecnico_nome} />
-              </>
+              <Avatar nome={chamado.tecnico_nome} comAnel />
             )}
           </div>
 
-          {!!chamado.total_comentarios && (
-            <span className="flex items-center gap-1 text-xs text-slate-400">
-              💬 {chamado.total_comentarios}
-            </span>
-          )}
+          <div className="flex items-center gap-2">
+            <EtiquetaPrioridade prioridade={chamado.prioridade} />
+            {!!chamado.total_comentarios && (
+              <span className="flex items-center gap-1 text-tinta-suave">
+                <IconeComentario className="h-3.5 w-3.5" />
+                <span className="text-xs font-medium">
+                  {chamado.total_comentarios}
+                </span>
+              </span>
+            )}
+          </div>
         </div>
       </Link>
     </div>
@@ -106,14 +119,10 @@ function CartaoChamado({
 
 function Coluna({
   status,
-  titulo,
-  cabecalho,
   chamados,
   arrastavel,
 }: {
   status: StatusChamado;
-  titulo: string;
-  cabecalho: string;
   chamados: Chamado[];
   arrastavel: boolean;
 }) {
@@ -123,22 +132,20 @@ function Coluna({
     <div
       ref={setNodeRef}
       className={
-        'w-72 shrink-0 rounded-2xl p-2 transition-colors ' +
-        (isOver ? 'bg-slate-200' : 'bg-slate-100/80')
+        'w-[300px] shrink-0 rounded-xl p-1 transition-colors ' +
+        (isOver ? 'bg-realce' : '')
       }
     >
-      <div
-        className={`flex items-center justify-between rounded-xl ${cabecalho} px-3 py-2`}
-      >
-        <h2 className="text-sm font-semibold text-white">{titulo}</h2>
-        <span className="rounded-full bg-white/30 px-2 py-0.5 text-xs font-semibold text-white">
+      <div className="flex items-center justify-between px-2 py-2">
+        <EtiquetaStatus status={status} />
+        <span className="rounded-md bg-realce px-1.5 py-0.5 text-xs font-medium text-tinta-suave">
           {chamados.length}
         </span>
       </div>
 
-      <div className="mt-2 space-y-2">
+      <div className="space-y-2 px-1">
         {chamados.length === 0 && (
-          <p className="rounded-xl border border-dashed border-slate-300 p-4 text-center text-xs text-slate-400">
+          <p className="rounded-lg border border-dashed border-linha px-3 py-6 text-center text-xs text-tinta-suave">
             Nenhum chamado
           </p>
         )}
@@ -164,6 +171,7 @@ export function Chamados() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [erroArraste, setErroArraste] = useState<string | null>(null);
+  const [busca, setBusca] = useState('');
 
   // "meus" e "semTecnico" sao os atalhos da sidebar (ver Sidebar.tsx),
   // lidos daqui via query string em vez de rotas separadas para cada
@@ -191,6 +199,15 @@ export function Chamados() {
       )
       .finally(() => setCarregando(false));
   }, [meus, semTecnico, usuario]);
+
+  // Busca no titulo, filtrando o que ja esta carregado -- nao existe
+  // endpoint de busca por texto no backend, e criar um so para isso
+  // seria desproporcional ao que a tela precisa.
+  const chamadosFiltrados = useMemo(() => {
+    const termo = busca.trim().toLowerCase();
+    if (!termo) return chamados;
+    return chamados.filter((c) => c.titulo.toLowerCase().includes(termo));
+  }, [chamados, busca]);
 
   async function aoSoltar(evento: DragEndEvent) {
     const { active, over } = evento;
@@ -226,20 +243,36 @@ export function Chamados() {
   const podeArrastar = usuario?.papel === 'tecnico';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-50">
-      <header className="border-b border-slate-200/60 bg-white/60 px-6 py-4 backdrop-blur-sm">
-        <h2 className="text-lg font-semibold text-slate-900">
-          {TITULOS_VISTA[vista]}
-        </h2>
+    <div className="min-h-screen bg-white">
+      <header className="flex items-center justify-between gap-4 border-b border-linha px-8 py-5">
+        <div>
+          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-tinta-suave">
+            Painel de chamados
+          </p>
+          <h2 className="mt-0.5 text-3xl font-bold tracking-tight text-tinta">
+            {TITULOS_VISTA[vista]}
+          </h2>
+        </div>
+
+        <label className="relative">
+          <IconeBusca className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tinta-suave" />
+          <input
+            type="search"
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            placeholder="Buscar chamados..."
+            className="w-64 rounded-lg border border-linha bg-realce py-2 pl-9 pr-3 text-sm text-tinta placeholder:text-tinta-suave focus:border-linha-forte focus:bg-white focus:outline-none"
+          />
+        </label>
       </header>
 
-      <main className="px-6 py-6">
-        {carregando && <p className="text-slate-500">Carregando...</p>}
+      <main className="px-8 py-6">
+        {carregando && <p className="text-tinta-suave">Carregando...</p>}
 
         {erro && (
           <p
             role="alert"
-            className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="rounded-lg border border-prioridade-urgente/30 bg-prioridade-urgente/5 px-4 py-3 text-sm text-prioridade-urgente"
           >
             {erro}
           </p>
@@ -248,7 +281,7 @@ export function Chamados() {
         {erroArraste && (
           <p
             role="alert"
-            className="mb-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+            className="mb-3 rounded-lg border border-prioridade-urgente/30 bg-prioridade-urgente/5 px-4 py-3 text-sm text-prioridade-urgente"
           >
             {erroArraste}
           </p>
@@ -256,14 +289,12 @@ export function Chamados() {
 
         {!carregando && !erro && (
           <DndContext onDragEnd={aoSoltar}>
-            <div className="flex gap-4 overflow-x-auto pb-4">
-              {COLUNAS.map((coluna) => (
+            <div className="flex gap-3 overflow-x-auto pb-4">
+              {STATUS_EM_ORDEM.map((status) => (
                 <Coluna
-                  key={coluna.status}
-                  status={coluna.status}
-                  titulo={coluna.titulo}
-                  cabecalho={coluna.cabecalho}
-                  chamados={chamados.filter((c) => c.status === coluna.status)}
+                  key={status}
+                  status={status}
+                  chamados={chamadosFiltrados.filter((c) => c.status === status)}
                   arrastavel={podeArrastar}
                 />
               ))}

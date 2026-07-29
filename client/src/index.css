@@ -1,1 +1,45 @@
 @import "tailwindcss";
+
+/*
+ * Paleta monocromatica (preto/branco/cinza), seguindo referencia
+ * visual passada pelo usuario: status e prioridade sao comunicados
+ * por ponto colorido e texto, nao por fundo colorido em bloco.
+ */
+@theme {
+  --color-papel: #ffffff;
+  --color-superficie: #ffffff;
+  --color-tinta: #0f0f10;
+  --color-tinta-suave: #6b6b6f;
+  --color-linha: #e6e6e8;
+  --color-linha-forte: #d0d0d3;
+  --color-realce: #f4f4f5;
+
+  --color-status-aberto: #16181d;
+  --color-status-andamento: #16181d;
+  --color-status-fechado: #a1a1a6;
+
+  --color-prioridade-baixa: #6b6b6f;
+  --color-prioridade-media: #2f5fae;
+  --color-prioridade-alta: #b5560f;
+  --color-prioridade-urgente: #c22b2b;
+
+  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+
+body {
+  background-color: var(--color-papel);
+  color: var(--color-tinta);
+}
+
+/* Entrada suave dos cards do kanban (ver pages/Chamados.tsx) */
+@keyframes entrada {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

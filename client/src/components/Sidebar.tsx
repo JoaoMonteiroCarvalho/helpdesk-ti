@@ -1,5 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
+import { Avatar } from './Avatar';
+import {
+  IconeChamados,
+  IconeMais,
+  IconeSair,
+  IconeSemTecnico,
+  IconeUsuario,
+} from './Icones';
 
 interface ItemMenu {
   rotulo: string;
@@ -7,6 +15,7 @@ interface ItemMenu {
   // Compara so a query string: os tres itens de listagem apontam para
   // /chamados, diferenciados por parametro (ver Chamados.tsx).
   ativoEm: (busca: string) => boolean;
+  Icone: typeof IconeChamados;
   soTecnico?: boolean;
 }
 
@@ -15,31 +24,44 @@ const ITENS: ItemMenu[] = [
     rotulo: 'Todos os chamados',
     href: '/chamados',
     ativoEm: (busca) => busca === '',
+    Icone: IconeChamados,
   },
   {
     rotulo: 'Meus chamados',
     href: '/chamados?meus=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('meus') === '1',
+    Icone: IconeUsuario,
   },
   {
     rotulo: 'Sem tecnico',
     href: '/chamados?semTecnico=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('semTecnico') === '1',
+    Icone: IconeSemTecnico,
     soTecnico: true,
   },
 ];
+
+const ROTULOS_PAPEL: Record<string, string> = {
+  tecnico: 'Tecnico',
+  usuario: 'Usuario',
+};
 
 export function Sidebar() {
   const { usuario, sair } = useAuth();
   const local = useLocation();
 
   return (
-    <aside className="flex h-screen w-56 shrink-0 flex-col border-r border-slate-200 bg-white">
-      <div className="border-b border-slate-200 px-4 py-4">
-        <h1 className="text-lg font-bold text-slate-900">helpdesk-ti</h1>
+    <aside className="flex h-screen w-64 shrink-0 flex-col bg-white">
+      <div className="flex items-center gap-2.5 px-5 py-5">
+        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-tinta text-sm font-bold text-white">
+          H
+        </span>
+        <h1 className="text-lg font-bold tracking-tight text-tinta">
+          Helpdesk
+        </h1>
       </div>
 
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className="flex-1 space-y-0.5 px-3 pt-2">
         {ITENS.filter((item) => !item.soTecnico || usuario?.papel === 'tecnico').map(
           (item) => {
             const ativo =
@@ -49,37 +71,49 @@ export function Sidebar() {
                 key={item.href}
                 to={item.href}
                 className={
-                  'block rounded-lg px-3 py-2 text-sm font-medium ' +
+                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' +
                   (ativo
-                    ? 'bg-slate-900 text-white'
-                    : 'text-slate-700 hover:bg-slate-100')
+                    ? 'bg-realce text-tinta'
+                    : 'text-tinta-suave hover:bg-realce/60 hover:text-tinta')
                 }
               >
+                <item.Icone className="h-[18px] w-[18px] shrink-0" />
                 {item.rotulo}
               </Link>
             );
           }
         )}
-
-        <Link
-          to="/chamados/novo"
-          className="mt-4 block rounded-lg bg-slate-100 px-3 py-2 text-center text-sm font-medium text-slate-900 hover:bg-slate-200"
-        >
-          + Novo chamado
-        </Link>
       </nav>
 
-      <div className="border-t border-slate-200 p-4">
-        <p className="text-sm font-medium text-slate-900">{usuario?.nome}</p>
-        <span className="inline-block rounded-full bg-slate-100 px-2 py-0.5 text-xs font-medium text-slate-700">
-          {usuario?.papel}
-        </span>
+      <div className="px-3 pb-3">
+        <Link
+          to="/chamados/novo"
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-tinta px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-tinta/85"
+        >
+          <IconeMais className="h-4 w-4" />
+          Novo chamado
+        </Link>
+      </div>
+
+      <div className="border-t border-linha p-4">
+        <div className="flex items-center gap-2.5">
+          <Avatar nome={usuario?.nome ?? '?'} tamanho="md" />
+          <div className="min-w-0">
+            <p className="truncate text-sm font-semibold text-tinta">
+              {usuario?.nome}
+            </p>
+            <span className="text-xs uppercase tracking-wide text-tinta-suave">
+              {ROTULOS_PAPEL[usuario?.papel ?? ''] ?? usuario?.papel}
+            </span>
+          </div>
+        </div>
         <button
           type="button"
           onClick={sair}
-          className="mt-3 w-full rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-slate-700 hover:bg-slate-50"
+          className="mt-3 flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-sm font-medium text-tinta-suave transition-colors hover:text-tinta"
         >
-          Sair
+          <IconeSair className="h-[18px] w-[18px]" />
+          Sair da conta
         </button>
       </div>
     </aside>
