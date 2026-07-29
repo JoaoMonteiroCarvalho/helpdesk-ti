@@ -59,14 +59,15 @@ async function carregarChamadoVisivel(
 /**
  * GET /api/chamados
  *
- * Filtros aceitos: status, prioridade nao (fica para depois), semTecnico.
- * Para usuario comum, solicitante_id e SEMPRE o proprio id: um
- * solicitante_id vindo da query e descartado.
+ * Filtros aceitos: status, categoria, prioridade nao (fica para
+ * depois), semTecnico. Para usuario comum, solicitante_id e SEMPRE o
+ * proprio id: um solicitante_id vindo da query e descartado.
  */
 export async function listar(req: Request, res: Response): Promise<void> {
   const filtros: FiltrosChamado = {};
 
-  const { status, semTecnico, tecnico_id, solicitante_id } = req.query;
+  const { status, categoria, semTecnico, tecnico_id, solicitante_id } =
+    req.query;
 
   if (typeof status === 'string') {
     if (!STATUS_VALIDOS.includes(status as StatusChamado)) {
@@ -76,6 +77,16 @@ export async function listar(req: Request, res: Response): Promise<void> {
       return;
     }
     filtros.status = status as StatusChamado;
+  }
+
+  if (typeof categoria === 'string') {
+    if (!CATEGORIAS_VALIDAS.includes(categoria as CategoriaChamado)) {
+      res.status(400).json({
+        erro: `Categoria invalida. Use: ${CATEGORIAS_VALIDAS.join(', ')}`,
+      });
+      return;
+    }
+    filtros.categoria = categoria as CategoriaChamado;
   }
 
   if (semTecnico === 'true') {

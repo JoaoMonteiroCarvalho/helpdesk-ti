@@ -14,6 +14,7 @@ interface RespostaListagem {
 
 export interface FiltrosListagem {
   status?: StatusChamado;
+  categoria?: CategoriaChamado;
   /** Chamados atendidos por este tecnico. */
   tecnicoId?: number;
   /** true = so chamados ainda sem tecnico atribuido. */
@@ -33,6 +34,7 @@ export async function listar(
 ): Promise<RespostaListagem> {
   const params = new URLSearchParams();
   if (filtros.status) params.set('status', filtros.status);
+  if (filtros.categoria) params.set('categoria', filtros.categoria);
   if (filtros.tecnicoId !== undefined) {
     params.set('tecnico_id', String(filtros.tecnicoId));
   }

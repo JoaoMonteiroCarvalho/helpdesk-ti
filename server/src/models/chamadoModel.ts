@@ -41,6 +41,11 @@ export async function listar(
     valores.push(filtros.status);
   }
 
+  if (filtros.categoria) {
+    condicoes.push('ch.categoria = ?');
+    valores.push(filtros.categoria);
+  }
+
   if (filtros.solicitante_id !== undefined) {
     condicoes.push('ch.solicitante_id = ?');
     valores.push(filtros.solicitante_id);

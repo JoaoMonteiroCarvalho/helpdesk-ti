@@ -17,7 +17,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Avatar } from '../components/Avatar';
 import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
 import { IconeBusca, IconeComentario } from '../components/Icones';
-import type { Chamado, StatusChamado } from '../types/chamado';
+import type { CategoriaChamado, Chamado, StatusChamado } from '../types/chamado';
 
 // Colunas do kanban, na ordem em que aparecem na tela. Usa o status
 // como divisor porque e o dado que ja existe no schema -- o sistema
@@ -30,6 +30,14 @@ const TITULOS_VISTA: Record<string, string> = {
   meus: 'Meus chamados',
   semTecnico: 'Chamados sem tecnico',
 };
+
+const CATEGORIAS: { valor: CategoriaChamado; rotulo: string }[] = [
+  { valor: 'hardware', rotulo: 'Hardware' },
+  { valor: 'software', rotulo: 'Software' },
+  { valor: 'rede', rotulo: 'Rede' },
+  { valor: 'acesso', rotulo: 'Acesso' },
+  { valor: 'outro', rotulo: 'Outro' },
+];
 
 /** So o miolo visual do card, sem nada de drag: reusado no card normal
  * e na copia flutuante do DragOverlay. */
@@ -214,6 +222,9 @@ export function Chamados() {
   const [erro, setErro] = useState<string | null>(null);
   const [erroArraste, setErroArraste] = useState<string | null>(null);
   const [busca, setBusca] = useState('');
+  // '' representa "todas as categorias": select nao tem estado ausente
+  // como um checkbox, entao precisa de um valor proprio para "sem filtro".
+  const [categoria, setCategoria] = useState<CategoriaChamado | ''>('');
 
   // "meus" e "semTecnico" sao os atalhos da sidebar (ver Sidebar.tsx),
   // lidos daqui via query string em vez de rotas separadas para cada
@@ -230,6 +241,7 @@ export function Chamados() {
       .listar({
         tecnicoId: meus && usuario?.papel === 'tecnico' ? usuario.id : undefined,
         semTecnico,
+        categoria: categoria || undefined,
       })
       .then((resposta) => setChamados(resposta.chamados))
       .catch((falha) =>
@@ -240,7 +252,7 @@ export function Chamados() {
         )
       )
       .finally(() => setCarregando(false));
-  }, [meus, semTecnico, usuario]);
+  }, [meus, semTecnico, categoria, usuario]);
 
   // Busca no titulo, filtrando o que ja esta carregado -- nao existe
   // endpoint de busca por texto no backend, e criar um so para isso
@@ -315,16 +327,31 @@ export function Chamados() {
           </h2>
         </div>
 
-        <label className="relative">
-          <IconeBusca className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tinta-suave" />
-          <input
-            type="search"
-            value={busca}
-            onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar chamados..."
-            className="w-64 rounded-lg border border-linha bg-realce py-2 pl-9 pr-3 text-sm text-tinta placeholder:text-tinta-suave focus:border-linha-forte focus:bg-white focus:outline-none"
-          />
-        </label>
+        <div className="flex items-center gap-2">
+          <select
+            value={categoria}
+            onChange={(e) => setCategoria(e.target.value as CategoriaChamado | '')}
+            className="rounded-lg border border-linha bg-realce px-3 py-2 text-sm text-tinta focus:border-linha-forte focus:bg-white focus:outline-none"
+          >
+            <option value="">Todas as categorias</option>
+            {CATEGORIAS.map((c) => (
+              <option key={c.valor} value={c.valor}>
+                {c.rotulo}
+              </option>
+            ))}
+          </select>
+
+          <label className="relative">
+            <IconeBusca className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tinta-suave" />
+            <input
+              type="search"
+              value={busca}
+              onChange={(e) => setBusca(e.target.value)}
+              placeholder="Buscar chamados..."
+              className="w-64 rounded-lg border border-linha bg-realce py-2 pl-9 pr-3 text-sm text-tinta placeholder:text-tinta-suave focus:border-linha-forte focus:bg-white focus:outline-none"
+            />
+          </label>
+        </div>
       </header>
 
       <main className="px-8 py-6">

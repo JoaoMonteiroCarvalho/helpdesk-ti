@@ -116,6 +116,7 @@ export interface DadosNovoChamado {
 /** Filtros aceitos pela listagem. Todos opcionais e combinaveis. */
 export interface FiltrosChamado {
   status?: StatusChamado;
+  categoria?: CategoriaChamado;
   solicitante_id?: number;
   tecnico_id?: number;
   /** true = apenas chamados que ainda nao foram assumidos */
