@@ -1,5 +1,11 @@
 import { useEffect, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
+import {
+  DndContext,
+  useDraggable,
+  useDroppable,
+  type DragEndEvent,
+} from '@dnd-kit/core';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
@@ -26,55 +32,101 @@ const TITULOS_VISTA: Record<string, string> = {
   semTecnico: 'Chamados sem tecnico',
 };
 
-function CartaoChamado({ chamado }: { chamado: Chamado }) {
+function CartaoChamado({
+  chamado,
+  arrastavel,
+}: {
+  chamado: Chamado;
+  arrastavel: boolean;
+}) {
+  // disabled vem da tela: usuario comum nao pode mudar status (a API
+  // ja recusa com 403), entao nem oferecemos o arrasto para ele.
+  const { attributes, listeners, setNodeRef, transform, isDragging } =
+    useDraggable({ id: chamado.id, disabled: !arrastavel });
+
+  const estilo = transform
+    ? {
+        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
+        zIndex: 10,
+      }
+    : undefined;
+
   return (
-    <Link
-      to={`/chamados/${chamado.id}`}
-      className="block rounded-xl bg-white p-3.5 shadow-sm transition-all duration-150 hover:-translate-y-0.5 hover:shadow-md"
+    <div
+      ref={setNodeRef}
+      style={estilo}
+      {...listeners}
+      {...attributes}
+      className={
+        'rounded-xl bg-white p-3.5 shadow-sm transition-shadow duration-150 ' +
+        (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
+        (isDragging ? 'opacity-50 shadow-lg' : 'hover:shadow-md')
+      }
     >
-      <div className="flex items-start justify-between gap-2">
-        <h3 className="text-sm font-medium text-slate-900">
-          {chamado.titulo}
-        </h3>
-        <EtiquetaPrioridade prioridade={chamado.prioridade} />
-      </div>
-
-      <p className="mt-1 line-clamp-2 text-xs text-slate-500">
-        {chamado.descricao}
-      </p>
-
-      <div className="mt-3 flex items-center justify-between">
-        <div className="flex items-center gap-1.5">
-          <Avatar nome={chamado.solicitante_nome} />
-          {chamado.tecnico_nome && (
-            <>
-              <span className="text-xs text-slate-300">→</span>
-              <Avatar nome={chamado.tecnico_nome} />
-            </>
-          )}
+      <Link
+        to={`/chamados/${chamado.id}`}
+        // Se comecar a arrastar, o clique nao deve navegar: dnd-kit so
+        // dispara o drag apos um pequeno deslocamento do mouse, entao
+        // um clique parado ainda funciona como link normalmente.
+        onClick={(evento) => isDragging && evento.preventDefault()}
+        className="block"
+      >
+        <div className="flex items-start justify-between gap-2">
+          <h3 className="text-sm font-medium text-slate-900">
+            {chamado.titulo}
+          </h3>
+          <EtiquetaPrioridade prioridade={chamado.prioridade} />
         </div>
 
-        {!!chamado.total_comentarios && (
-          <span className="flex items-center gap-1 text-xs text-slate-400">
-            💬 {chamado.total_comentarios}
-          </span>
-        )}
-      </div>
-    </Link>
+        <p className="mt-1 line-clamp-2 text-xs text-slate-500">
+          {chamado.descricao}
+        </p>
+
+        <div className="mt-3 flex items-center justify-between">
+          <div className="flex items-center gap-1.5">
+            <Avatar nome={chamado.solicitante_nome} />
+            {chamado.tecnico_nome && (
+              <>
+                <span className="text-xs text-slate-300">→</span>
+                <Avatar nome={chamado.tecnico_nome} />
+              </>
+            )}
+          </div>
+
+          {!!chamado.total_comentarios && (
+            <span className="flex items-center gap-1 text-xs text-slate-400">
+              💬 {chamado.total_comentarios}
+            </span>
+          )}
+        </div>
+      </Link>
+    </div>
   );
 }
 
 function Coluna({
+  status,
   titulo,
   cabecalho,
   chamados,
+  arrastavel,
 }: {
+  status: StatusChamado;
   titulo: string;
   cabecalho: string;
   chamados: Chamado[];
+  arrastavel: boolean;
 }) {
+  const { setNodeRef, isOver } = useDroppable({ id: status });
+
   return (
-    <div className="w-72 shrink-0 rounded-2xl bg-slate-100/80 p-2">
+    <div
+      ref={setNodeRef}
+      className={
+        'w-72 shrink-0 rounded-2xl p-2 transition-colors ' +
+        (isOver ? 'bg-slate-200' : 'bg-slate-100/80')
+      }
+    >
       <div
         className={`flex items-center justify-between rounded-xl ${cabecalho} px-3 py-2`}
       >
@@ -96,7 +148,7 @@ function Coluna({
             className="animate-[entrada_0.2s_ease-out_backwards]"
             style={{ animationDelay: `${indice * 30}ms` }}
           >
-            <CartaoChamado chamado={chamado} />
+            <CartaoChamado chamado={chamado} arrastavel={arrastavel} />
           </div>
         ))}
       </div>
@@ -111,6 +163,7 @@ export function Chamados() {
   const [chamados, setChamados] = useState<Chamado[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
+  const [erroArraste, setErroArraste] = useState<string | null>(null);
 
   // "meus" e "semTecnico" sao os atalhos da sidebar (ver Sidebar.tsx),
   // lidos daqui via query string em vez de rotas separadas para cada
@@ -139,6 +192,39 @@ export function Chamados() {
       .finally(() => setCarregando(false));
   }, [meus, semTecnico, usuario]);
 
+  async function aoSoltar(evento: DragEndEvent) {
+    const { active, over } = evento;
+    if (!over) return;
+
+    const chamadoId = Number(active.id);
+    const novoStatus = over.id as StatusChamado;
+    const atual = chamados.find((c) => c.id === chamadoId);
+
+    if (!atual || atual.status === novoStatus) return;
+
+    // Atualizacao otimista: muda a tela na hora para o arraste parecer
+    // instantaneo, e desfaz se a API recusar.
+    setErroArraste(null);
+    setChamados((lista) =>
+      lista.map((c) => (c.id === chamadoId ? { ...c, status: novoStatus } : c))
+    );
+
+    try {
+      await chamadosApi.atualizarStatus(chamadoId, novoStatus);
+    } catch (falha) {
+      setChamados((lista) =>
+        lista.map((c) => (c.id === chamadoId ? { ...c, status: atual.status } : c))
+      );
+      setErroArraste(
+        falha instanceof ErroApi
+          ? falha.message
+          : 'Nao foi possivel mover o chamado'
+      );
+    }
+  }
+
+  const podeArrastar = usuario?.papel === 'tecnico';
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-sky-50 to-indigo-50">
       <header className="border-b border-slate-200/60 bg-white/60 px-6 py-4 backdrop-blur-sm">
@@ -159,17 +245,30 @@ export function Chamados() {
           </p>
         )}
 
+        {erroArraste && (
+          <p
+            role="alert"
+            className="mb-3 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700"
+          >
+            {erroArraste}
+          </p>
+        )}
+
         {!carregando && !erro && (
-          <div className="flex gap-4 overflow-x-auto pb-4">
-            {COLUNAS.map((coluna) => (
-              <Coluna
-                key={coluna.status}
-                titulo={coluna.titulo}
-                cabecalho={coluna.cabecalho}
-                chamados={chamados.filter((c) => c.status === coluna.status)}
-              />
-            ))}
-          </div>
+          <DndContext onDragEnd={aoSoltar}>
+            <div className="flex gap-4 overflow-x-auto pb-4">
+              {COLUNAS.map((coluna) => (
+                <Coluna
+                  key={coluna.status}
+                  status={coluna.status}
+                  titulo={coluna.titulo}
+                  cabecalho={coluna.cabecalho}
+                  chamados={chamados.filter((c) => c.status === coluna.status)}
+                  arrastavel={podeArrastar}
+                />
+              ))}
+            </div>
+          </DndContext>
         )}
       </main>
     </div>
