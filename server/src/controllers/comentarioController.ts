@@ -1,9 +1,50 @@
 import { Request, Response } from 'express';
+import * as chamadoModel from '../models/chamadoModel';
 import * as comentarioModel from '../models/comentarioModel';
-import { carregarChamadoVisivel } from '../utils/permissoes';
+import { ChamadoDetalhado } from '../types';
 
 const TAMANHO_MINIMO_TEXTO = 2;
 const TAMANHO_MAXIMO_TEXTO = 5000;
+
+/** Converte o :id da URL em numero, ou null se nao for um id valido. */
+function lerId(valor: string | string[] | undefined): number | null {
+  if (typeof valor !== 'string') return null;
+
+  const id = Number(valor);
+  return Number.isInteger(id) && id > 0 ? id : null;
+}
+
+/**
+ * Carrega o chamado de req.params.id e checa se o usuario logado pode
+ * ve-lo: tecnico ve qualquer um, usuario comum so os proprios.
+ *
+ * Responde 404 tanto para inexistente quanto para chamado de outra
+ * pessoa, para nao revelar que o id existe.
+ */
+async function carregarChamadoVisivel(
+  req: Request,
+  res: Response
+): Promise<ChamadoDetalhado | null> {
+  const id = lerId(req.params.id);
+
+  if (id === null) {
+    res.status(400).json({ erro: 'Id invalido' });
+    return null;
+  }
+
+  const chamado = await chamadoModel.buscarPorId(id);
+  const podeVer =
+    chamado &&
+    (req.usuario!.papel === 'tecnico' ||
+      chamado.solicitante_id === req.usuario!.id);
+
+  if (!podeVer) {
+    res.status(404).json({ erro: 'Chamado nao encontrado' });
+    return null;
+  }
+
+  return chamado;
+}
 
 /**
  * GET /api/chamados/:id/comentarios
