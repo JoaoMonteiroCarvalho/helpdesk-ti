@@ -151,23 +151,6 @@ export async function atualizarStatus(
 }
 
 /**
- * Atribui (ou troca) o tecnico responsavel, sem checar o estado atual.
- * Use para reatribuicao administrativa; para o tecnico se auto-atribuir,
- * prefira assumir().
- */
-export async function atribuirTecnico(
-  id: number,
-  tecnicoId: number | null
-): Promise<boolean> {
-  const [resultado] = await pool.execute<ResultSetHeader>(
-    'UPDATE chamados SET tecnico_id = ? WHERE id = ?',
-    [tecnicoId, id]
-  );
-
-  return resultado.affectedRows > 0;
-}
-
-/**
  * Tecnico assume um chamado que ainda nao tem responsavel.
  *
  * O "AND tecnico_id IS NULL" torna a operacao segura contra concorrencia:

@@ -25,7 +25,6 @@ router.post('/', chamadoController.criar);
 // Acoes de atendimento: exclusivas de tecnicos.
 router.patch('/:id/status', autorizar('tecnico'), chamadoController.atualizarStatus);
 router.patch('/:id/assumir', autorizar('tecnico'), chamadoController.assumir);
-router.patch('/:id/tecnico', autorizar('tecnico'), chamadoController.atribuirTecnico);
 
 // Comentarios vivem dentro de um chamado, refletindo o ON DELETE CASCADE
 // do schema. A permissao vem de graca: para comentar e preciso conseguir

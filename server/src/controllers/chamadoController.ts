@@ -1,7 +1,6 @@
 import { Request, Response } from 'express';
 import * as chamadoModel from '../models/chamadoModel';
 import * as comentarioModel from '../models/comentarioModel';
-import * as usuarioModel from '../models/usuarioModel';
 import { ChamadoDetalhado } from '../types';
 import {
   CATEGORIAS_VALIDAS,
@@ -262,54 +261,6 @@ export async function assumir(req: Request, res: Response): Promise<void> {
       erro: 'Chamado ja foi assumido por outro tecnico',
       tecnico: existe.tecnico_nome,
     });
-    return;
-  }
-
-  res.json({ chamado: await chamadoModel.buscarPorId(id) });
-}
-
-/**
- * PATCH /api/chamados/:id/tecnico
- * Reatribui o responsavel. Enviar tecnico_id: null libera o chamado.
- */
-export async function atribuirTecnico(
-  req: Request,
-  res: Response
-): Promise<void> {
-  const id = lerId(req.params.id);
-
-  if (id === null) {
-    res.status(400).json({ erro: 'Id invalido' });
-    return;
-  }
-
-  const { tecnico_id: tecnicoId } = req.body ?? {};
-
-  if (tecnicoId !== null && !Number.isInteger(tecnicoId)) {
-    res.status(400).json({ erro: 'tecnico_id deve ser um numero ou null' });
-    return;
-  }
-
-  // Nao basta a chave estrangeira: ela aceita qualquer usuario, mas so
-  // quem tem papel "tecnico" deve poder ser designado.
-  if (tecnicoId !== null) {
-    const destino = await usuarioModel.buscarPorId(tecnicoId);
-
-    if (!destino) {
-      res.status(404).json({ erro: 'Usuario informado nao existe' });
-      return;
-    }
-
-    if (destino.papel !== 'tecnico') {
-      res.status(400).json({ erro: 'O usuario informado nao e tecnico' });
-      return;
-    }
-  }
-
-  const atualizou = await chamadoModel.atribuirTecnico(id, tecnicoId);
-
-  if (!atualizou) {
-    res.status(404).json({ erro: 'Chamado nao encontrado' });
     return;
   }
 

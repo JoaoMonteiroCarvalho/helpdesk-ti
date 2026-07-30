@@ -134,15 +134,3 @@ export async function perfil(req: Request, res: Response): Promise<void> {
 
   res.json({ usuario });
 }
-
-/**
- * GET /api/auth/tecnicos
- * Restrita ao papel "tecnico" (ver authRoutes).
- */
-export async function listarTecnicos(
-  _req: Request,
-  res: Response
-): Promise<void> {
-  const tecnicos = await usuarioModel.listar('tecnico');
-  res.json({ tecnicos });
-}

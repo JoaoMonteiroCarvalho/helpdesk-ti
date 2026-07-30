@@ -82,19 +82,3 @@ export async function emailJaCadastrado(email: string): Promise<boolean> {
 
   return linhas.length > 0;
 }
-
-/** Lista os usuarios, opcionalmente filtrando por papel. */
-export async function listar(papel?: string): Promise<Usuario[]> {
-  if (papel) {
-    const [linhas] = await pool.execute<RowDataPacket[]>(
-      `SELECT ${CAMPOS_PUBLICOS} FROM usuarios WHERE papel = ? ORDER BY nome`,
-      [papel]
-    );
-    return linhas as Usuario[];
-  }
-
-  const [linhas] = await pool.query<RowDataPacket[]>(
-    `SELECT ${CAMPOS_PUBLICOS} FROM usuarios ORDER BY nome`
-  );
-  return linhas as Usuario[];
-}
