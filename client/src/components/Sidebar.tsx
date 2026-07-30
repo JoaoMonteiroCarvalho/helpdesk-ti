@@ -102,7 +102,7 @@ export function Sidebar() {
             <p className="truncate text-sm font-semibold text-tinta">
               {usuario?.nome}
             </p>
-            <span className="text-xs uppercase tracking-wide text-tinta-suave">
+            <span className="text-xs text-tinta-suave">
               {ROTULOS_PAPEL[usuario?.papel ?? ''] ?? usuario?.papel}
             </span>
           </div>

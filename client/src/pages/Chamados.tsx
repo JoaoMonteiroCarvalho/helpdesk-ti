@@ -39,6 +39,12 @@ const CATEGORIAS: { valor: CategoriaChamado; rotulo: string }[] = [
   { valor: 'outro', rotulo: 'Outro' },
 ];
 
+const ROTULOS_STATUS: Record<StatusChamado, string> = {
+  aberto: 'Aberto',
+  em_andamento: 'Em andamento',
+  fechado: 'Fechado',
+};
+
 /** So o miolo visual do card, sem nada de drag: reusado no card normal
  * e na copia flutuante do DragOverlay. */
 function ConteudoCartao({ chamado }: { chamado: Chamado }) {
@@ -137,7 +143,7 @@ function CartaoChamado({
       // pagina crescer nem a barra de rolagem aparecer durante o
       // arraste, diferente de mover o proprio card com transform.
       className={
-        'rounded-xl border bg-white p-3.5 ' +
+        'rounded-lg border bg-white p-3.5 ' +
         (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
         (isDragging
           ? 'invisible'
@@ -182,7 +188,7 @@ function Coluna({
       // disponivel em telas largas, mas nao encolhem alem do minimo em
       // telas estreitas -- ai o overflow-x-auto do quadro assume.
       className={
-        'min-w-[280px] flex-1 rounded-xl p-1 transition-colors ' +
+        'min-w-[280px] flex-1 rounded-lg p-1 transition-colors ' +
         (isOver ? 'bg-realce' : '')
       }
     >
@@ -221,6 +227,15 @@ export function Chamados() {
   const [carregando, setCarregando] = useState(true);
   const [erro, setErro] = useState<string | null>(null);
   const [erroArraste, setErroArraste] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+
+  // Some sozinho apos um tempo: nao exige que o usuario feche a
+  // mensagem, so confirma rapidamente que a acao funcionou.
+  useEffect(() => {
+    if (!toast) return;
+    const temporizador = setTimeout(() => setToast(null), 2500);
+    return () => clearTimeout(temporizador);
+  }, [toast]);
   const [busca, setBusca] = useState('');
   // '' representa "todas as categorias": select nao tem estado ausente
   // como um checkbox, entao precisa de um valor proprio para "sem filtro".
@@ -294,6 +309,7 @@ export function Chamados() {
 
     try {
       await chamadosApi.atualizarStatus(chamadoId, novoStatus);
+      setToast(`"${atual.titulo}" movido para ${ROTULOS_STATUS[novoStatus]}`);
     } catch (falha) {
       setChamados((lista) =>
         lista.map((c) => (c.id === chamadoId ? { ...c, status: atual.status } : c))
@@ -319,10 +335,10 @@ export function Chamados() {
     <div className="min-h-screen bg-white">
       <header className="flex items-center justify-between gap-4 border-b border-linha px-8 py-5">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-[0.14em] text-tinta-suave">
+          <p className="text-sm font-medium text-tinta-suave">
             Painel de chamados
           </p>
-          <h2 className="mt-0.5 text-3xl font-bold tracking-tight text-tinta">
+          <h2 className="text-3xl font-bold tracking-tight text-tinta">
             {TITULOS_VISTA[vista]}
           </h2>
         </div>
@@ -404,7 +420,7 @@ export function Chamados() {
                 coluna crescer e a barra de rolagem aparecer. */}
             <DragOverlay>
               {chamadoArrastado && (
-                <div className="w-[284px] rounded-xl border border-tinta bg-white p-3.5 shadow-lg">
+                <div className="w-[284px] rounded-lg border border-tinta bg-white p-3.5 shadow-lg">
                   <ConteudoCartao chamado={chamadoArrastado} />
                 </div>
               )}
@@ -412,6 +428,15 @@ export function Chamados() {
           </DndContext>
         )}
       </main>
+
+      {toast && (
+        <div
+          role="status"
+          className="fixed bottom-6 right-6 rounded-lg bg-tinta px-4 py-3 text-sm font-medium text-white shadow-lg"
+        >
+          {toast}
+        </div>
+      )}
     </div>
   );
 }

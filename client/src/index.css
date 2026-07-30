@@ -23,13 +23,20 @@
   --color-prioridade-alta: #b5560f;
   --color-prioridade-urgente: #c22b2b;
 
-  --font-display: ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  /* Fontes nativas do SO em vez da pilha generica "ui-sans-serif,
+     system-ui": Segoe UI Variable/Helvetica Neue/San Francisco tem
+     peso e contraste melhores que o fallback puramente generico, sem
+     precisar baixar arquivo de fonte nenhum. */
+  --font-display:
+    "Segoe UI Variable Display", "Segoe UI", "Helvetica Neue", Arial,
+    sans-serif;
   --font-mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
 }
 
 body {
   background-color: var(--color-papel);
   color: var(--color-tinta);
+  font-family: var(--font-display);
 }
 
 /* Entrada suave dos cards do kanban (ver pages/Chamados.tsx) */
