@@ -1,13 +1,7 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Avatar } from './Avatar';
-import {
-  IconeChamados,
-  IconeMais,
-  IconeSair,
-  IconeSemTecnico,
-  IconeUsuario,
-} from './Icones';
+import { IconeMais, IconeSair } from './Icones';
 
 interface ItemMenu {
   rotulo: string;
@@ -15,28 +9,24 @@ interface ItemMenu {
   // Compara so a query string: os tres itens de listagem apontam para
   // /chamados, diferenciados por parametro (ver Chamados.tsx).
   ativoEm: (busca: string) => boolean;
-  Icone: typeof IconeChamados;
   soTecnico?: boolean;
 }
 
 const ITENS: ItemMenu[] = [
   {
-    rotulo: 'Todos os chamados',
+    rotulo: 'Todos',
     href: '/chamados',
     ativoEm: (busca) => busca === '',
-    Icone: IconeChamados,
   },
   {
     rotulo: 'Meus chamados',
     href: '/chamados?meus=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('meus') === '1',
-    Icone: IconeUsuario,
   },
   {
-    rotulo: 'Sem tecnico',
+    rotulo: 'Sem técnico',
     href: '/chamados?semTecnico=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('semTecnico') === '1',
-    Icone: IconeSemTecnico,
     soTecnico: true,
   },
 ];
@@ -51,17 +41,14 @@ export function Sidebar() {
   const local = useLocation();
 
   return (
-    <aside className="flex h-screen w-64 shrink-0 flex-col bg-white">
-      <div className="flex items-center gap-2.5 px-5 py-5">
-        <span className="flex h-8 w-8 items-center justify-center rounded-lg bg-tinta text-sm font-bold text-white">
-          H
-        </span>
-        <h1 className="text-lg font-bold tracking-tight text-tinta">
-          Helpdesk
+    <aside className="flex h-screen w-64 shrink-0 flex-col bg-papel">
+      <div className="px-5 py-6">
+        <h1 className="text-xl font-semibold tracking-tight text-tinta">
+          Chamados TI
         </h1>
       </div>
 
-      <nav className="flex-1 space-y-0.5 px-3 pt-2">
+      <nav className="flex-1 space-y-0.5 px-3">
         {ITENS.filter((item) => !item.soTecnico || usuario?.papel === 'tecnico').map(
           (item) => {
             const ativo =
@@ -71,13 +58,12 @@ export function Sidebar() {
                 key={item.href}
                 to={item.href}
                 className={
-                  'flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm font-medium transition-colors ' +
+                  'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' +
                   (ativo
                     ? 'bg-realce text-tinta'
                     : 'text-tinta-suave hover:bg-realce/60 hover:text-tinta')
                 }
               >
-                <item.Icone className="h-[18px] w-[18px] shrink-0" />
                 {item.rotulo}
               </Link>
             );
@@ -85,10 +71,11 @@ export function Sidebar() {
         )}
       </nav>
 
-      <div className="px-3 pb-3">
+      <div className="px-3 pb-6">
+        <div className="mx-3 mb-4 border-t border-linha" />
         <Link
           to="/chamados/novo"
-          className="flex items-center justify-center gap-1.5 rounded-lg bg-tinta px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-tinta/85"
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-acento px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-acento/90"
         >
           <IconeMais className="h-4 w-4" />
           Novo chamado

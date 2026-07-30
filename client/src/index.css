@@ -1,27 +1,40 @@
 @import "tailwindcss";
 
 /*
- * Paleta monocromatica (preto/branco/cinza), seguindo referencia
- * visual passada pelo usuario: status e prioridade sao comunicados
- * por ponto colorido e texto, nao por fundo colorido em bloco.
+ * Tema escuro marrom-carvao com cards em papel claro, seguindo
+ * referencia visual passada pelo usuario. Os nomes dos tokens
+ * continuam os mesmos de antes (papel/tinta/linha/realce) para nao
+ * precisar reescrever todo componente -- so os valores mudaram.
+ *
+ * papel      = fundo geral escuro (sidebar + area do kanban)
+ * superficie = fundo claro dos cards, que contrasta com o papel
+ * tinta      = texto sobre o papel escuro (creme quase-branco)
+ * tinta-forte/tinta-suave-clara = texto sobre a superficie clara dos cards
  */
 @theme {
-  --color-papel: #ffffff;
-  --color-superficie: #ffffff;
-  --color-tinta: #0f0f10;
-  --color-tinta-suave: #6b6b6f;
-  --color-linha: #e6e6e8;
-  --color-linha-forte: #d0d0d3;
-  --color-realce: #f4f4f5;
+  --color-papel: #2b2723;
+  --color-superficie: #faf3e8;
+  --color-tinta: #f2ede4;
+  --color-tinta-suave: #b8afa3;
+  --color-linha: #45403a;
+  --color-linha-forte: #5c554d;
+  --color-realce: #38332e;
 
-  --color-status-aberto: #16181d;
-  --color-status-andamento: #16181d;
-  --color-status-fechado: #a1a1a6;
+  /* Texto sobre a superficie clara dos cards -- precisa de contraste
+     proprio, diferente do texto claro usado sobre o papel escuro. */
+  --color-tinta-card: #2b2723;
+  --color-tinta-card-suave: #6b6155;
 
-  --color-prioridade-baixa: #6b6b6f;
-  --color-prioridade-media: #2f5fae;
+  --color-status-aberto: #cc8a3d;
+  --color-status-andamento: #cc8a3d;
+  --color-status-fechado: #8a8178;
+
+  --color-prioridade-baixa: #8a8178;
+  --color-prioridade-media: #4a7a5a;
   --color-prioridade-alta: #b5560f;
-  --color-prioridade-urgente: #c22b2b;
+  --color-prioridade-urgente: #9c3b3b;
+
+  --color-acento: #c2632c;
 
   /* Fontes nativas do SO em vez da pilha generica "ui-sans-serif,
      system-ui": Segoe UI Variable/Helvetica Neue/San Francisco tem

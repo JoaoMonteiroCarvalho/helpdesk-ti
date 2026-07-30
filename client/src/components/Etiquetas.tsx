@@ -10,25 +10,17 @@ const ROTULOS_STATUS: Record<StatusChamado, string> = {
   fechado: 'Fechado',
 };
 
-const PONTO_STATUS: Record<StatusChamado, string> = {
-  aberto: 'bg-status-aberto',
-  em_andamento: 'bg-status-andamento',
-  fechado: 'bg-status-fechado',
-};
-
-/** Ponto + texto, usado nos titulos das colunas do kanban. */
+/** Texto do titulo de cada coluna do kanban, na cor de acento. */
 export function EtiquetaStatus({ status }: { status: StatusChamado }) {
   return (
-    <span className="inline-flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-tinta">
-      <span className={`h-1.5 w-1.5 rounded-full ${PONTO_STATUS[status]}`} />
+    <span className="text-sm font-medium text-status-aberto">
       {ROTULOS_STATUS[status]}
     </span>
   );
 }
 
-// Prioridade e sempre uma pilula cinza-clara com texto colorido: o
-// fundo nao muda de cor, so o texto -- assim as quatro prioridades
-// tem o mesmo peso visual e a cor vira o unico sinal de urgencia.
+// So o texto muda de cor, sem fundo: as quatro prioridades tem o
+// mesmo peso visual e a cor vira o unico sinal de urgencia.
 const CORES_PRIORIDADE: Record<PrioridadeChamado, string> = {
   baixa: 'text-prioridade-baixa',
   media: 'text-prioridade-media',
@@ -37,10 +29,10 @@ const CORES_PRIORIDADE: Record<PrioridadeChamado, string> = {
 };
 
 const ROTULOS_PRIORIDADE: Record<PrioridadeChamado, string> = {
-  baixa: 'Baixa',
-  media: 'Media',
-  alta: 'Alta',
-  urgente: 'Urgente',
+  baixa: 'baixa',
+  media: 'média',
+  alta: 'alta',
+  urgente: 'urgente',
 };
 
 export function EtiquetaPrioridade({
@@ -49,9 +41,7 @@ export function EtiquetaPrioridade({
   prioridade: PrioridadeChamado;
 }) {
   return (
-    <span
-      className={`inline-flex items-center rounded-md bg-realce px-2 py-0.5 text-[11px] font-bold uppercase tracking-wide ${CORES_PRIORIDADE[prioridade]}`}
-    >
+    <span className={`text-sm font-medium ${CORES_PRIORIDADE[prioridade]}`}>
       {ROTULOS_PRIORIDADE[prioridade]}
     </span>
   );

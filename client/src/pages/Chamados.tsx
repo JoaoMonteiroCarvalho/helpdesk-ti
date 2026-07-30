@@ -45,6 +45,15 @@ const ROTULOS_STATUS: Record<StatusChamado, string> = {
   fechado: 'Fechado',
 };
 
+// Cor da barra lateral do card: usa a mesma cor da etiqueta de
+// prioridade, so que como faixa solida em vez de texto.
+const BARRA_PRIORIDADE: Record<Chamado['prioridade'], string> = {
+  baixa: 'bg-prioridade-baixa',
+  media: 'bg-prioridade-media',
+  alta: 'bg-prioridade-alta',
+  urgente: 'bg-prioridade-urgente',
+};
+
 /** So o miolo visual do card, sem nada de drag: reusado no card normal
  * e na copia flutuante do DragOverlay. */
 function ConteudoCartao({ chamado }: { chamado: Chamado }) {
@@ -52,47 +61,39 @@ function ConteudoCartao({ chamado }: { chamado: Chamado }) {
 
   return (
     <>
-      <div className="flex items-start justify-between gap-2">
-        <h3
-          className={
-            'text-sm font-semibold leading-snug ' +
-            (fechado ? 'text-tinta-suave line-through' : 'text-tinta')
-          }
-        >
-          {chamado.titulo}
-        </h3>
-        <span className="shrink-0 font-mono text-xs text-tinta-suave">
-          #{chamado.id}
-        </span>
-      </div>
+      <h3
+        className={
+          'text-base font-semibold leading-snug ' +
+          (fechado
+            ? 'text-tinta-card-suave line-through'
+            : 'text-tinta-card')
+        }
+      >
+        {chamado.titulo}
+      </h3>
 
       <p
         className={
-          'mt-1 line-clamp-2 text-xs leading-relaxed ' +
-          (fechado ? 'text-tinta-suave/60' : 'text-tinta-suave')
+          'mt-1.5 line-clamp-2 text-sm leading-relaxed ' +
+          (fechado ? 'text-tinta-card-suave/70' : 'text-tinta-card-suave')
         }
       >
         {chamado.descricao}
       </p>
 
       <div className="mt-3 flex items-center justify-between">
-        <div className="flex -space-x-1.5">
-          <Avatar nome={chamado.solicitante_nome} comAnel />
-          {chamado.tecnico_nome && (
-            <Avatar nome={chamado.tecnico_nome} comAnel />
-          )}
-        </div>
+        <EtiquetaPrioridade prioridade={chamado.prioridade} />
 
         <div className="flex items-center gap-2">
-          <EtiquetaPrioridade prioridade={chamado.prioridade} />
           {!!chamado.total_comentarios && (
-            <span className="flex items-center gap-1 text-tinta-suave">
+            <span className="flex items-center gap-1 text-tinta-card-suave">
               <IconeComentario className="h-3.5 w-3.5" />
               <span className="text-xs font-medium">
                 {chamado.total_comentarios}
               </span>
             </span>
           )}
+          <Avatar nome={chamado.solicitante_nome} />
         </div>
       </div>
     </>
@@ -143,13 +144,15 @@ function CartaoChamado({
       // pagina crescer nem a barra de rolagem aparecer durante o
       // arraste, diferente de mover o proprio card com transform.
       className={
-        'rounded-lg border bg-white p-3.5 ' +
+        'flex overflow-hidden rounded-lg bg-superficie ' +
         (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
-        (isDragging
-          ? 'invisible'
-          : 'border-linha transition-[border-color,box-shadow] duration-150 hover:border-linha-forte hover:shadow-sm')
+        (isDragging ? 'invisible' : 'transition-shadow duration-150 hover:shadow-md')
       }
     >
+      {/* Barra lateral colorida: indica a prioridade de relance, sem
+          precisar ler o texto da etiqueta. */}
+      <span className={`w-1.5 shrink-0 ${BARRA_PRIORIDADE[chamado.prioridade]}`} />
+
       <div
         role="button"
         tabIndex={0}
@@ -162,7 +165,7 @@ function CartaoChamado({
             aoClicar();
           }
         }}
-        className="block"
+        className="block flex-1 p-4"
       >
         <ConteudoCartao chamado={chamado} />
       </div>
@@ -192,14 +195,12 @@ function Coluna({
         (isOver ? 'bg-realce' : '')
       }
     >
-      <div className="flex items-center justify-between px-2 py-2">
+      <div className="flex items-baseline gap-1.5 px-2 py-2">
         <EtiquetaStatus status={status} />
-        <span className="rounded-md bg-realce px-1.5 py-0.5 text-xs font-medium text-tinta-suave">
-          {chamados.length}
-        </span>
+        <span className="text-sm text-tinta-suave">· {chamados.length}</span>
       </div>
 
-      <div className="space-y-2 px-1">
+      <div className="space-y-2 px-1 pb-1">
         {chamados.length === 0 && (
           <p className="rounded-lg border border-dashed border-linha px-3 py-6 text-center text-xs text-tinta-suave">
             Nenhum chamado
@@ -332,12 +333,10 @@ export function Chamados() {
   );
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-papel">
       <header className="flex items-center justify-between gap-4 border-b border-linha px-8 py-5">
         <div>
-          <p className="text-sm font-medium text-tinta-suave">
-            Painel de chamados
-          </p>
+          <p className="text-sm font-medium text-tinta-suave">Painel</p>
           <h2 className="text-3xl font-bold tracking-tight text-tinta">
             {TITULOS_VISTA[vista]}
           </h2>
@@ -347,7 +346,7 @@ export function Chamados() {
           <select
             value={categoria}
             onChange={(e) => setCategoria(e.target.value as CategoriaChamado | '')}
-            className="rounded-lg border border-linha bg-realce px-3 py-2 text-sm text-tinta focus:border-linha-forte focus:bg-white focus:outline-none"
+            className="rounded-lg border border-linha bg-realce px-3 py-2 text-sm text-tinta focus:border-linha-forte focus:outline-none"
           >
             <option value="">Todas as categorias</option>
             {CATEGORIAS.map((c) => (
@@ -364,7 +363,7 @@ export function Chamados() {
               value={busca}
               onChange={(e) => setBusca(e.target.value)}
               placeholder="Buscar chamados..."
-              className="w-64 rounded-lg border border-linha bg-realce py-2 pl-9 pr-3 text-sm text-tinta placeholder:text-tinta-suave focus:border-linha-forte focus:bg-white focus:outline-none"
+              className="w-64 rounded-lg border border-linha bg-realce py-2 pl-9 pr-3 text-sm text-tinta placeholder:text-tinta-suave focus:border-linha-forte focus:outline-none"
             />
           </label>
         </div>
@@ -420,8 +419,13 @@ export function Chamados() {
                 coluna crescer e a barra de rolagem aparecer. */}
             <DragOverlay>
               {chamadoArrastado && (
-                <div className="w-[284px] rounded-lg border border-tinta bg-white p-3.5 shadow-lg">
-                  <ConteudoCartao chamado={chamadoArrastado} />
+                <div className="flex w-[284px] overflow-hidden rounded-lg bg-superficie shadow-lg">
+                  <span
+                    className={`w-1.5 shrink-0 ${BARRA_PRIORIDADE[chamadoArrastado.prioridade]}`}
+                  />
+                  <div className="flex-1 p-4">
+                    <ConteudoCartao chamado={chamadoArrastado} />
+                  </div>
                 </div>
               )}
             </DragOverlay>
@@ -432,7 +436,7 @@ export function Chamados() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-6 right-6 rounded-lg bg-tinta px-4 py-3 text-sm font-medium text-white shadow-lg"
+          className="fixed bottom-6 right-6 rounded-lg bg-acento px-4 py-3 text-sm font-medium text-white shadow-lg"
         >
           {toast}
         </div>
