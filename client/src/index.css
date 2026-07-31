@@ -73,11 +73,11 @@ body {
     transparent 1.5px
   );
   background-size: 24px 24px;
-  /* Deriva bem lenta na diagonal, um ciclo completo do grid (24px):
-     o movimento so fica perceptivel pelo canto do olho, nao olhando
-     direto, e o loop e sem costura porque volta exatamente ao ponto
-     de partida (0 0 -> 24px 24px == mesmo padrao). */
-  animation: derivar-pontos 40s linear infinite;
+  /* Deriva na diagonal, um ciclo completo do grid (24px): o loop fica
+     sem costura porque volta ao mesmo padrao visual de onde comecou
+     (0 0 -> 24px 24px). 40s era lento demais para notar na pratica --
+     12s da um movimento visivel mas ainda calmo, sem parecer piscando. */
+  animation: derivar-pontos 12s linear infinite;
 }
 
 /* Respeita quem pediu menos movimento: a textura fica parada, so
