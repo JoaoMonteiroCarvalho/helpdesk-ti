@@ -336,7 +336,7 @@ export function Chamados() {
   );
 
   return (
-    <div className="min-h-screen bg-papel">
+    <div className="min-h-screen bg-papel textura-pontos">
       <header className="flex items-center justify-between gap-4 border-b border-linha px-8 py-5">
         <div>
           <p className="text-sm font-medium text-tinta-suave">Painel</p>

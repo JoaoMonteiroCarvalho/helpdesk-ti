@@ -16,7 +16,7 @@ export function Cadastro() {
 
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-papel">
+      <main className="flex min-h-screen items-center justify-center bg-papel textura-pontos">
         <div className="flex items-center gap-2 text-tinta-suave">
           <Spinner />
           Carregando...
@@ -49,7 +49,7 @@ export function Cadastro() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-papel p-6">
+    <main className="flex min-h-screen items-center justify-center bg-papel textura-pontos p-6">
       <div className="w-full max-w-sm animate-[entrada_0.25s_ease-out] rounded-xl bg-superficie p-8 shadow-2xl ring-1 ring-black/10">
         <h1 className="text-2xl font-bold text-tinta-card">Chamados TI</h1>
         <p className="mt-1 text-sm text-tinta-card-suave">Crie sua conta</p>

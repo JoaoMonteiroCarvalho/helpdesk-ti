@@ -52,7 +52,7 @@ export function NovoChamado() {
   }
 
   return (
-    <div className="min-h-screen bg-papel">
+    <div className="min-h-screen bg-papel textura-pontos">
       <header className="border-b border-linha px-8 py-5">
         <Link
           to="/chamados"
