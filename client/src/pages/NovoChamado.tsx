@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
+import { Spinner } from '../components/Spinner';
 import type { CategoriaChamado, PrioridadeChamado } from '../types/chamado';
 
 const CATEGORIAS: { valor: CategoriaChamado; rotulo: string }[] = [
@@ -51,24 +52,27 @@ export function NovoChamado() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-2xl px-6 py-4">
-          <Link to="/chamados" className="text-sm text-slate-500 hover:underline">
-            &larr; Voltar para os chamados
-          </Link>
-        </div>
+    <div className="min-h-screen bg-papel">
+      <header className="border-b border-linha px-8 py-5">
+        <Link
+          to="/chamados"
+          className="text-sm text-tinta-suave transition-colors hover:text-tinta"
+        >
+          &larr; Voltar para os chamados
+        </Link>
       </header>
 
       <main className="mx-auto max-w-2xl px-6 py-8">
-        <h1 className="text-xl font-semibold text-slate-900">Novo chamado</h1>
+        <h1 className="text-2xl font-bold tracking-tight text-tinta">
+          Novo chamado
+        </h1>
 
         <form
           onSubmit={aoEnviar}
-          className="mt-6 space-y-4 rounded-xl bg-white p-6 shadow-sm"
+          className="mt-6 animate-[entrada_0.2s_ease-out] space-y-4 rounded-xl bg-superficie p-6 shadow-sm"
         >
           <div>
-            <label htmlFor="titulo" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="titulo" className="block text-sm font-medium text-tinta-card">
               Titulo
             </label>
             <input
@@ -77,12 +81,12 @@ export function NovoChamado() {
               value={titulo}
               onChange={(e) => setTitulo(e.target.value)}
               placeholder="Resuma o problema em uma linha"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
             />
           </div>
 
           <div>
-            <label htmlFor="descricao" className="block text-sm font-medium text-slate-700">
+            <label htmlFor="descricao" className="block text-sm font-medium text-tinta-card">
               Descricao
             </label>
             <textarea
@@ -92,20 +96,20 @@ export function NovoChamado() {
               value={descricao}
               onChange={(e) => setDescricao(e.target.value)}
               placeholder="O que acontece, desde quando, e o que voce ja tentou"
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
             />
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
             <div>
-              <label htmlFor="categoria" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="categoria" className="block text-sm font-medium text-tinta-card">
                 Categoria
               </label>
               <select
                 id="categoria"
                 value={categoria}
                 onChange={(e) => setCategoria(e.target.value as CategoriaChamado)}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+                className="mt-1 w-full rounded-lg border border-linha-forte/40 bg-superficie px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
               >
                 {CATEGORIAS.map((c) => (
                   <option key={c.valor} value={c.valor}>
@@ -116,14 +120,14 @@ export function NovoChamado() {
             </div>
 
             <div>
-              <label htmlFor="prioridade" className="block text-sm font-medium text-slate-700">
+              <label htmlFor="prioridade" className="block text-sm font-medium text-tinta-card">
                 Prioridade
               </label>
               <select
                 id="prioridade"
                 value={prioridade}
                 onChange={(e) => setPrioridade(e.target.value as PrioridadeChamado)}
-                className="mt-1 w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+                className="mt-1 w-full rounded-lg border border-linha-forte/40 bg-superficie px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
               >
                 {PRIORIDADES.map((p) => (
                   <option key={p.valor} value={p.valor}>
@@ -135,7 +139,10 @@ export function NovoChamado() {
           </div>
 
           {erro && (
-            <p role="alert" className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">
+            <p
+              role="alert"
+              className="animate-[entrada_0.15s_ease-out] rounded-lg bg-prioridade-urgente/10 px-3 py-2 text-sm text-prioridade-urgente"
+            >
               {erro}
             </p>
           )}
@@ -144,13 +151,14 @@ export function NovoChamado() {
             <button
               type="submit"
               disabled={enviando}
-              className="rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:bg-slate-400"
+              className="flex items-center gap-2 rounded-lg bg-acento px-4 py-2 font-medium text-white transition-all hover:bg-acento/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
             >
+              {enviando && <Spinner className="h-4 w-4 border-white/40 border-t-white" />}
               {enviando ? 'Abrindo...' : 'Abrir chamado'}
             </button>
             <Link
               to="/chamados"
-              className="rounded-lg border border-slate-300 px-4 py-2 font-medium text-slate-700 hover:bg-slate-50"
+              className="rounded-lg border border-linha-forte/40 px-4 py-2 font-medium text-tinta-card transition-colors hover:bg-realce/40"
             >
               Cancelar
             </Link>

@@ -17,6 +17,7 @@ import { useAuth } from '../auth/AuthContext';
 import { Avatar } from '../components/Avatar';
 import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
 import { IconeBusca, IconeComentario } from '../components/Icones';
+import { Spinner } from '../components/Spinner';
 import type { CategoriaChamado, Chamado, StatusChamado } from '../types/chamado';
 
 // Colunas do kanban, na ordem em que aparecem na tela. Usa o status
@@ -146,7 +147,9 @@ function CartaoChamado({
       className={
         'flex overflow-hidden rounded-lg bg-superficie ' +
         (arrastavel ? 'cursor-grab active:cursor-grabbing ' : '') +
-        (isDragging ? 'invisible' : 'transition-shadow duration-150 hover:shadow-md')
+        (isDragging
+          ? 'invisible'
+          : 'transition-all duration-150 hover:-translate-y-0.5 hover:shadow-lg')
       }
     >
       {/* Barra lateral colorida: indica a prioridade de relance, sem
@@ -370,7 +373,12 @@ export function Chamados() {
       </header>
 
       <main className="px-8 py-6">
-        {carregando && <p className="text-tinta-suave">Carregando...</p>}
+        {carregando && (
+          <div className="flex items-center gap-2 text-tinta-suave">
+            <Spinner />
+            Carregando...
+          </div>
+        )}
 
         {erro && (
           <p
@@ -436,7 +444,7 @@ export function Chamados() {
       {toast && (
         <div
           role="status"
-          className="fixed bottom-6 right-6 rounded-lg bg-acento px-4 py-3 text-sm font-medium text-white shadow-lg"
+          className="fixed bottom-6 right-6 animate-[subir_0.2s_ease-out] rounded-lg bg-acento px-4 py-3 text-sm font-medium text-white shadow-lg"
         >
           {toast}
         </div>

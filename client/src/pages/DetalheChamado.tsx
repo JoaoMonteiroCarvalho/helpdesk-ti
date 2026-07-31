@@ -4,6 +4,7 @@ import * as chamadosApi from '../api/chamados';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
+import { Spinner } from '../components/Spinner';
 import type { Chamado, Comentario, StatusChamado } from '../types/chamado';
 
 const OPCOES_STATUS: { valor: StatusChamado; rotulo: string }[] = [
@@ -96,88 +97,97 @@ export function DetalheChamado() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-100">
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto max-w-2xl px-6 py-4">
-          <Link to="/chamados" className="text-sm text-slate-500 hover:underline">
-            &larr; Voltar para os chamados
-          </Link>
-        </div>
+    <div className="min-h-screen bg-papel">
+      <header className="border-b border-linha px-8 py-5">
+        <Link
+          to="/chamados"
+          className="text-sm text-tinta-suave transition-colors hover:text-tinta"
+        >
+          &larr; Voltar para os chamados
+        </Link>
       </header>
 
       <main className="mx-auto max-w-2xl px-6 py-8">
-        {carregando && <p className="text-slate-500">Carregando...</p>}
+        {carregando && (
+          <div className="flex items-center gap-2 text-tinta-suave">
+            <Spinner />
+            Carregando...
+          </div>
+        )}
 
         {erro && (
-          <p role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+          <p
+            role="alert"
+            className="rounded-lg bg-prioridade-urgente/10 px-4 py-3 text-sm text-prioridade-urgente"
+          >
             {erro}
           </p>
         )}
 
         {chamado && (
-          <>
-            <div className="rounded-xl bg-white p-6 shadow-sm">
+          <div className="animate-[entrada_0.2s_ease-out]">
+            <div className="rounded-xl bg-superficie p-6 shadow-sm">
               <div className="flex flex-wrap items-start justify-between gap-3">
-                <h1 className="text-xl font-semibold text-slate-900">
+                <h1 className="text-xl font-semibold text-tinta-card">
                   {chamado.titulo}
                 </h1>
-                <div className="flex shrink-0 gap-2">
+                <div className="flex shrink-0 items-center gap-3">
                   <EtiquetaStatus status={chamado.status} />
                   <EtiquetaPrioridade prioridade={chamado.prioridade} />
                 </div>
               </div>
 
-              <p className="mt-4 whitespace-pre-wrap text-slate-700">
+              <p className="mt-4 whitespace-pre-wrap text-tinta-card-suave">
                 {chamado.descricao}
               </p>
 
               <dl className="mt-6 grid grid-cols-2 gap-4 text-sm">
                 <div>
-                  <dt className="text-slate-500">Aberto por</dt>
-                  <dd className="font-medium text-slate-900">
+                  <dt className="text-tinta-card-suave">Aberto por</dt>
+                  <dd className="font-medium text-tinta-card">
                     {chamado.solicitante_nome}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Tecnico</dt>
-                  <dd className="font-medium text-slate-900">
+                  <dt className="text-tinta-card-suave">Tecnico</dt>
+                  <dd className="font-medium text-tinta-card">
                     {chamado.tecnico_nome ?? 'nao atribuido'}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Categoria</dt>
-                  <dd className="font-medium text-slate-900">
+                  <dt className="text-tinta-card-suave">Categoria</dt>
+                  <dd className="font-medium text-tinta-card">
                     {chamado.categoria}
                   </dd>
                 </div>
                 <div>
-                  <dt className="text-slate-500">Criado em</dt>
-                  <dd className="font-medium text-slate-900">
+                  <dt className="text-tinta-card-suave">Criado em</dt>
+                  <dd className="font-medium text-tinta-card">
                     {formatarData(chamado.criado_em)}
                   </dd>
                 </div>
               </dl>
 
               {usuario?.papel === 'tecnico' && (
-                <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-slate-100 pt-4">
+                <div className="mt-6 flex flex-wrap items-center gap-3 border-t border-linha-forte/30 pt-4">
                   {!chamado.tecnico_nome && (
                     <button
                       type="button"
                       onClick={aoAssumir}
-                      className="rounded-lg bg-slate-900 px-3 py-1.5 text-sm font-medium text-white hover:bg-slate-700"
+                      className="rounded-lg bg-acento px-3 py-1.5 text-sm font-medium text-white transition-all hover:bg-acento/90 active:scale-[0.98]"
                     >
                       Assumir chamado
                     </button>
                   )}
 
-                  <label className="flex items-center gap-2 text-sm text-slate-700">
+                  <label className="flex items-center gap-2 text-sm text-tinta-card-suave">
                     Status
                     <select
                       value={chamado.status}
                       onChange={(e) =>
                         aoMudarStatus(e.target.value as StatusChamado)
                       }
-                      className="rounded-lg border border-slate-300 bg-white px-2 py-1.5"
+                      className="rounded-lg border border-linha-forte/40 bg-superficie px-2 py-1.5 text-tinta-card outline-none transition-colors focus:border-acento"
                     >
                       {OPCOES_STATUS.map((opcao) => (
                         <option key={opcao.valor} value={opcao.valor}>
@@ -190,38 +200,42 @@ export function DetalheChamado() {
               )}
 
               {erroAcao && (
-                <p role="alert" className="mt-3 text-sm text-red-700">
+                <p
+                  role="alert"
+                  className="mt-3 animate-[entrada_0.15s_ease-out] text-sm text-prioridade-urgente"
+                >
                   {erroAcao}
                 </p>
               )}
             </div>
 
             <div className="mt-6">
-              <h2 className="font-semibold text-slate-900">
+              <h2 className="font-semibold text-tinta">
                 Comentarios ({comentarios.length})
               </h2>
 
               {comentarios.length === 0 && (
-                <p className="mt-2 text-sm text-slate-500">
+                <p className="mt-2 text-sm text-tinta-suave">
                   Nenhum comentario ainda.
                 </p>
               )}
 
               <ul className="mt-3 space-y-3">
-                {comentarios.map((comentario) => (
+                {comentarios.map((comentario, indice) => (
                   <li
                     key={comentario.id}
-                    className="rounded-lg bg-white p-4 shadow-sm"
+                    style={{ animationDelay: `${indice * 30}ms` }}
+                    className="animate-[entrada_0.2s_ease-out_backwards] rounded-lg bg-superficie p-4 shadow-sm"
                   >
                     <div className="flex items-baseline justify-between">
-                      <span className="text-sm font-medium text-slate-900">
+                      <span className="text-sm font-medium text-tinta-card">
                         {comentario.autor_nome}
                       </span>
-                      <span className="text-xs text-slate-400">
+                      <span className="text-xs text-tinta-card-suave">
                         {formatarData(comentario.criado_em)}
                       </span>
                     </div>
-                    <p className="mt-1 text-sm text-slate-700">
+                    <p className="mt-1 text-sm text-tinta-card-suave">
                       {comentario.texto}
                     </p>
                   </li>
@@ -235,11 +249,14 @@ export function DetalheChamado() {
                   value={texto}
                   onChange={(e) => setTexto(e.target.value)}
                   placeholder="Escreva um comentario"
-                  className="w-full rounded-lg border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+                  className="w-full rounded-lg border border-linha-forte/40 bg-superficie px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
                 />
 
                 {erroComentario && (
-                  <p role="alert" className="text-sm text-red-700">
+                  <p
+                    role="alert"
+                    className="animate-[entrada_0.15s_ease-out] text-sm text-prioridade-urgente"
+                  >
                     {erroComentario}
                   </p>
                 )}
@@ -247,13 +264,16 @@ export function DetalheChamado() {
                 <button
                   type="submit"
                   disabled={enviando}
-                  className="rounded-lg bg-slate-900 px-4 py-2 text-sm font-medium text-white hover:bg-slate-700 disabled:bg-slate-400"
+                  className="flex items-center gap-2 rounded-lg bg-acento px-4 py-2 text-sm font-medium text-white transition-all hover:bg-acento/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
                 >
+                  {enviando && (
+                    <Spinner className="h-3.5 w-3.5 border-white/40 border-t-white" />
+                  )}
                   {enviando ? 'Enviando...' : 'Comentar'}
                 </button>
               </form>
             </div>
-          </>
+          </div>
         )}
       </main>
     </div>

@@ -63,3 +63,22 @@ body {
     transform: translateY(0);
   }
 }
+
+/* Toast de sucesso/erro subindo de baixo para cima (ver pages/Chamados.tsx) */
+@keyframes subir {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Giro do spinner de carregamento (ver components/Spinner.tsx) */
+@keyframes girar {
+  to {
+    transform: rotate(360deg);
+  }
+}

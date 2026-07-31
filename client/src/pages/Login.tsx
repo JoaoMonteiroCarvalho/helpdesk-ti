@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { Spinner } from '../components/Spinner';
 
 export function Login() {
   const { usuario, carregando, entrar } = useAuth();
@@ -16,8 +17,11 @@ export function Login() {
   // usuario ainda e null mesmo para quem esta autenticado.
   if (carregando) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-slate-100">
-        <p className="text-slate-500">Carregando...</p>
+      <main className="flex min-h-screen items-center justify-center bg-papel">
+        <div className="flex items-center gap-2 text-tinta-suave">
+          <Spinner />
+          Carregando...
+        </div>
       </main>
     );
   }
@@ -48,10 +52,10 @@ export function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-slate-100 p-6">
-      <div className="w-full max-w-sm rounded-xl bg-white p-8 shadow-lg">
-        <h1 className="text-2xl font-bold text-slate-900">helpdesk-ti</h1>
-        <p className="mt-1 text-sm text-slate-600">
+    <main className="flex min-h-screen items-center justify-center bg-papel p-6">
+      <div className="w-full max-w-sm animate-[entrada_0.25s_ease-out] rounded-xl bg-superficie p-8 shadow-lg">
+        <h1 className="text-2xl font-bold text-tinta-card">Chamados TI</h1>
+        <p className="mt-1 text-sm text-tinta-card-suave">
           Entre para acompanhar seus chamados
         </p>
 
@@ -59,7 +63,7 @@ export function Login() {
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-tinta-card"
             >
               E-mail
             </label>
@@ -70,14 +74,14 @@ export function Login() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
             />
           </div>
 
           <div>
             <label
               htmlFor="senha"
-              className="block text-sm font-medium text-slate-700"
+              className="block text-sm font-medium text-tinta-card"
             >
               Senha
             </label>
@@ -88,14 +92,14 @@ export function Login() {
               autoComplete="current-password"
               value={senha}
               onChange={(e) => setSenha(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-slate-300 px-3 py-2 text-slate-900 outline-none focus:border-slate-500"
+              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
             />
           </div>
 
           {erro && (
             <p
               role="alert"
-              className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700"
+              className="animate-[entrada_0.15s_ease-out] rounded-lg bg-prioridade-urgente/10 px-3 py-2 text-sm text-prioridade-urgente"
             >
               {erro}
             </p>
@@ -106,15 +110,16 @@ export function Login() {
           <button
             type="submit"
             disabled={enviando}
-            className="w-full rounded-lg bg-slate-900 px-4 py-2 font-medium text-white hover:bg-slate-700 disabled:cursor-not-allowed disabled:bg-slate-400"
+            className="flex w-full items-center justify-center gap-2 rounded-lg bg-acento px-4 py-2 font-medium text-white transition-all hover:bg-acento/90 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-60"
           >
+            {enviando && <Spinner className="h-4 w-4 border-white/40 border-t-white" />}
             {enviando ? 'Entrando...' : 'Entrar'}
           </button>
         </form>
 
-        <p className="mt-4 text-center text-sm text-slate-600">
+        <p className="mt-4 text-center text-sm text-tinta-card-suave">
           Ainda não tem conta?{' '}
-          <Link to="/cadastro" className="font-medium text-slate-900 hover:underline">
+          <Link to="/cadastro" className="font-medium text-acento hover:underline">
             Criar conta
           </Link>
         </p>
