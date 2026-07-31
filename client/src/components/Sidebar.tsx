@@ -1,7 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../auth/AuthContext';
 import { Avatar } from './Avatar';
-import { IconeMais, IconeSair } from './Icones';
+import {
+  IconeChamados,
+  IconeMais,
+  IconeSair,
+  IconeSemTecnico,
+  IconeUsuario,
+} from './Icones';
 
 interface ItemMenu {
   rotulo: string;
@@ -9,6 +15,7 @@ interface ItemMenu {
   // Compara so a query string: os tres itens de listagem apontam para
   // /chamados, diferenciados por parametro (ver Chamados.tsx).
   ativoEm: (busca: string) => boolean;
+  Icone: (props: { className?: string }) => React.ReactElement;
   soTecnico?: boolean;
 }
 
@@ -17,16 +24,19 @@ const ITENS: ItemMenu[] = [
     rotulo: 'Todos',
     href: '/chamados',
     ativoEm: (busca) => busca === '',
+    Icone: IconeChamados,
   },
   {
     rotulo: 'Meus chamados',
     href: '/chamados?meus=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('meus') === '1',
+    Icone: IconeUsuario,
   },
   {
     rotulo: 'Sem técnico',
     href: '/chamados?semTecnico=1',
     ativoEm: (busca) => new URLSearchParams(busca).get('semTecnico') === '1',
+    Icone: IconeSemTecnico,
     soTecnico: true,
   },
 ];
@@ -57,13 +67,17 @@ export function Sidebar() {
               <Link
                 key={item.href}
                 to={item.href}
+                // Barra lateral colorida no item ativo, no mesmo estilo
+                // da barra de prioridade nos cards do kanban -- reusa o
+                // mesmo vocabulario visual em vez de inventar um novo.
                 className={
-                  'block rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ' +
+                  'flex items-center gap-2.5 rounded-lg border-l-2 px-3 py-2.5 text-sm font-medium transition-colors ' +
                   (ativo
-                    ? 'bg-realce text-tinta'
-                    : 'text-tinta-suave hover:bg-realce/60 hover:text-tinta')
+                    ? 'border-acento bg-realce text-tinta'
+                    : 'border-transparent text-tinta-suave hover:bg-realce/60 hover:text-tinta')
                 }
               >
+                <item.Icone className="h-[18px] w-[18px] shrink-0" />
                 {item.rotulo}
               </Link>
             );
@@ -75,7 +89,7 @@ export function Sidebar() {
         <div className="mx-3 mb-4 border-t border-linha" />
         <Link
           to="/chamados/novo"
-          className="flex items-center justify-center gap-1.5 rounded-lg bg-acento px-3 py-2.5 text-sm font-semibold text-white transition-colors hover:bg-acento/90"
+          className="flex items-center justify-center gap-1.5 rounded-lg bg-acento px-3 py-2.5 text-sm font-semibold text-white transition-all hover:bg-acento/90 active:scale-[0.98]"
         >
           <IconeMais className="h-4 w-4" />
           Novo chamado
@@ -97,7 +111,7 @@ export function Sidebar() {
         <button
           type="button"
           onClick={sair}
-          className="mt-3 flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-sm font-medium text-tinta-suave transition-colors hover:text-tinta"
+          className="mt-3 flex w-full items-center gap-2 rounded-lg px-1 py-1.5 text-sm font-medium text-tinta-suave transition-all hover:text-tinta active:scale-[0.98]"
         >
           <IconeSair className="h-[18px] w-[18px]" />
           Sair da conta

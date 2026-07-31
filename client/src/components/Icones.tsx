@@ -24,9 +24,15 @@ export function IconeUsuario({ className }: PropsIcone) {
 export function IconeSemTecnico({ className }: PropsIcone) {
   return (
     <svg viewBox="0 0 20 20" fill="none" className={className}>
-      <circle cx="10" cy="7" r="3" stroke="currentColor" strokeWidth="1.4" />
-      <path d="M4 17c0-3 2.7-5 6-5s6 2 6 5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
-      <path d="M3 3l14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+      <circle
+        cx="10"
+        cy="10"
+        r="7"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeDasharray="2.5 2.5"
+      />
+      <path d="M10 7v3M10 12.5v.01" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
     </svg>
   );
 }
