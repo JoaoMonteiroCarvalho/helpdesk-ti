@@ -69,7 +69,7 @@ export function NovoChamado() {
 
         <form
           onSubmit={aoEnviar}
-          className="mt-6 animate-[entrada_0.2s_ease-out] space-y-4 rounded-xl bg-superficie p-6 shadow-sm"
+          className="mt-6 animate-[entrada_0.2s_ease-out] space-y-4 rounded-xl bg-superficie p-6 shadow-xl ring-1 ring-black/10"
         >
           <div>
             <label htmlFor="titulo" className="block text-sm font-medium text-tinta-card">

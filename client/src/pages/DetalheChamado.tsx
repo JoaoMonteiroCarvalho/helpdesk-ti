@@ -126,7 +126,7 @@ export function DetalheChamado() {
 
         {chamado && (
           <div className="animate-[entrada_0.2s_ease-out]">
-            <div className="rounded-xl bg-superficie p-6 shadow-sm">
+            <div className="rounded-xl bg-superficie p-6 shadow-xl ring-1 ring-black/10">
               <div className="flex flex-wrap items-start justify-between gap-3">
                 <h1 className="text-xl font-semibold text-tinta-card">
                   {chamado.titulo}
