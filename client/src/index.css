@@ -73,6 +73,19 @@ body {
     transparent 1.5px
   );
   background-size: 24px 24px;
+  /* Deriva bem lenta na diagonal, um ciclo completo do grid (24px):
+     o movimento so fica perceptivel pelo canto do olho, nao olhando
+     direto, e o loop e sem costura porque volta exatamente ao ponto
+     de partida (0 0 -> 24px 24px == mesmo padrao). */
+  animation: derivar-pontos 40s linear infinite;
+}
+
+/* Respeita quem pediu menos movimento: a textura fica parada, so
+   como decoracao estatica, sem desabilitar o efeito por completo. */
+@media (prefers-reduced-motion: reduce) {
+  .textura-pontos {
+    animation: none;
+  }
 }
 
 /* Entrada suave dos cards do kanban (ver pages/Chamados.tsx) */
@@ -96,6 +109,16 @@ body {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+/* Deriva da textura de pontos (ver .textura-pontos acima) */
+@keyframes derivar-pontos {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 24px 24px;
   }
 }
 
