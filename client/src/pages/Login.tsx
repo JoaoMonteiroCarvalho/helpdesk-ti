@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
+import { IconeCadeado } from '../components/Icones';
 import { Spinner } from '../components/Spinner';
 
 export function Login() {
@@ -54,7 +55,10 @@ export function Login() {
   return (
     <main className="flex min-h-screen items-center justify-center bg-papel textura-pontos p-6">
       <div className="w-full max-w-sm animate-[entrada_0.25s_ease-out] rounded-xl bg-superficie p-8 shadow-2xl ring-1 ring-black/10">
-        <h1 className="text-2xl font-bold text-tinta-card">Chamados TI</h1>
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-acento/10">
+          <IconeCadeado className="h-7 w-7 text-acento" />
+        </div>
+        <h1 className="mt-4 text-2xl font-bold text-tinta-card">Chamados TI</h1>
         <p className="mt-1 text-sm text-tinta-card-suave">
           Entre para acompanhar seus chamados
         </p>

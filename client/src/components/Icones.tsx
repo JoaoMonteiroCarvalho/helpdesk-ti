@@ -80,3 +80,51 @@ export function IconeComentario({ className }: PropsIcone) {
     </svg>
   );
 }
+
+/** Icone maior e mais desenhado, para empty states (nao para UI densa
+ * como os demais icones deste arquivo). Uma caixa aberta, sugerindo
+ * "nada guardado aqui". */
+export function IconeCaixaVazia({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" className={className}>
+      <path
+        d="M8 20 24 12l16 8v14a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2V20Z"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinejoin="round"
+      />
+      <path
+        d="M8 20l16 8 16-8M24 28v8"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
+/** Icone maior e mais desenhado, para o cabecalho do login/cadastro. */
+export function IconeCadeado({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 48 48" fill="none" className={className}>
+      <rect
+        x="11"
+        y="21"
+        width="26"
+        height="19"
+        rx="3"
+        stroke="currentColor"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M16 21v-6a8 8 0 0 1 16 0v6"
+        stroke="currentColor"
+        strokeWidth="1.8"
+        strokeLinecap="round"
+      />
+      <circle cx="24" cy="29" r="2.2" fill="currentColor" />
+      <path d="M24 31.5v3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+    </svg>
+  );
+}

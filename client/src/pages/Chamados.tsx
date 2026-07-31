@@ -16,7 +16,7 @@ import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import { Avatar } from '../components/Avatar';
 import { EtiquetaPrioridade, EtiquetaStatus } from '../components/Etiquetas';
-import { IconeBusca, IconeComentario } from '../components/Icones';
+import { IconeBusca, IconeCaixaVazia, IconeComentario } from '../components/Icones';
 import { Spinner } from '../components/Spinner';
 import type { CategoriaChamado, Chamado, StatusChamado } from '../types/chamado';
 
@@ -205,9 +205,10 @@ function Coluna({
 
       <div className="space-y-2 px-1 pb-1">
         {chamados.length === 0 && (
-          <p className="rounded-lg border border-dashed border-linha px-3 py-6 text-center text-xs text-tinta-suave">
-            Nenhum chamado
-          </p>
+          <div className="flex flex-col items-center gap-2 rounded-lg border border-dashed border-linha px-3 py-8 text-center">
+            <IconeCaixaVazia className="h-9 w-9 text-tinta-suave/50" />
+            <p className="text-xs text-tinta-suave">Nenhum chamado</p>
+          </div>
         )}
         {chamados.map((chamado, indice) => (
           <div
