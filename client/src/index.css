@@ -48,15 +48,17 @@
 
 body {
   background-color: var(--color-papel);
-  /* Textura de pontos bem sutil sobre o fundo escuro, para nao ficar
-     uma cor solida vazia. Puro CSS (radial-gradient repetido), sem
-     imagem nem SVG externo -- so aparece de verdade em area grande de
-     fundo visivel, entao nao compete com o conteudo dos cards. */
+  /* Textura de pontos sobre o fundo escuro, para nao ficar uma cor
+     solida vazia. Puro CSS (radial-gradient repetido), sem imagem nem
+     SVG externo. Usa tinta-suave (clara) em baixa opacidade: a
+     primeira tentativa usou --color-linha, que e proxima demais do
+     tom do papel e ficava invisivel na pratica -- aqui o contraste de
+     luminancia e alto, e a opacidade baixa mantem discreto. */
   background-image: radial-gradient(
-    var(--color-linha) 1px,
-    transparent 1px
+    color-mix(in srgb, var(--color-tinta-suave) 35%, transparent) 1.5px,
+    transparent 1.5px
   );
-  background-size: 22px 22px;
+  background-size: 24px 24px;
   color: var(--color-tinta);
   font-family: var(--font-display);
 }
