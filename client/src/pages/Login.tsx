@@ -19,6 +19,8 @@ export function Login() {
   const [email, setEmail] = useState('');
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
+  const [erroEmail, setErroEmail] = useState<string | null>(null);
+  const [erroSenha, setErroSenha] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
   const [senhaVisivel, setSenhaVisivel] = useState(false);
 
@@ -43,6 +45,16 @@ export function Login() {
   async function aoEnviar(evento: React.FormEvent) {
     evento.preventDefault();
     setErro(null);
+
+    // Valida antes de chamar a API: evita uma ida e volta ao servidor
+    // so pra dizer o que da pra checar no proprio navegador.
+    const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    setErroEmail(emailValido ? null : 'Informe um e-mail valido');
+    setErroSenha(senha ? null : 'Informe a senha');
+    if (!emailValido || !senha) {
+      return;
+    }
+
     setEnviando(true);
 
     try {
@@ -97,10 +109,21 @@ export function Login() {
                 required
                 autoComplete="email"
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full rounded-lg border border-linha-forte/40 py-2 pl-9 pr-3 text-tinta-card outline-none transition-all focus:border-acento focus:ring-2 focus:ring-acento/20"
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  setErroEmail(null);
+                }}
+                className={
+                  'w-full rounded-lg border py-2 pl-9 pr-3 text-tinta-card outline-none transition-all focus:ring-2 ' +
+                  (erroEmail
+                    ? 'border-prioridade-urgente focus:border-prioridade-urgente focus:ring-prioridade-urgente/20'
+                    : 'border-linha-forte/40 focus:border-acento focus:ring-acento/20')
+                }
               />
             </div>
+            {erroEmail && (
+              <p className="mt-1 text-xs text-prioridade-urgente">{erroEmail}</p>
+            )}
           </div>
 
           <div>
@@ -118,8 +141,16 @@ export function Login() {
                 required
                 autoComplete="current-password"
                 value={senha}
-                onChange={(e) => setSenha(e.target.value)}
-                className="w-full rounded-lg border border-linha-forte/40 py-2 pl-9 pr-9 text-tinta-card outline-none transition-all focus:border-acento focus:ring-2 focus:ring-acento/20"
+                onChange={(e) => {
+                  setSenha(e.target.value);
+                  setErroSenha(null);
+                }}
+                className={
+                  'w-full rounded-lg border py-2 pl-9 pr-9 text-tinta-card outline-none transition-all focus:ring-2 ' +
+                  (erroSenha
+                    ? 'border-prioridade-urgente focus:border-prioridade-urgente focus:ring-prioridade-urgente/20'
+                    : 'border-linha-forte/40 focus:border-acento focus:ring-acento/20')
+                }
               />
               <button
                 type="button"
@@ -134,6 +165,9 @@ export function Login() {
                 )}
               </button>
             </div>
+            {erroSenha && (
+              <p className="mt-1 text-xs text-prioridade-urgente">{erroSenha}</p>
+            )}
           </div>
 
           {erro && (
