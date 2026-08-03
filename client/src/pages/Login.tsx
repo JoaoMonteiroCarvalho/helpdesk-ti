@@ -8,6 +8,7 @@ import {
   IconeEnvelope,
   IconeOlho,
   IconeOlhoFechado,
+  IlustracaoAcessoSeguro,
 } from '../components/Icones';
 import { Spinner } from '../components/Spinner';
 
@@ -60,12 +61,22 @@ export function Login() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-papel textura-pontos p-6">
-      <div className="w-full max-w-sm animate-[entrada_0.25s_ease-out] rounded-xl bg-superficie p-8 shadow-2xl ring-1 ring-black/10">
-        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-acento/10">
+    <main className="flex min-h-screen">
+      {/* Painel ilustrativo: some em telas pequenas, so decorativo. */}
+      <div className="hidden flex-1 flex-col items-center justify-center bg-papel textura-pontos lg:flex">
+        <IlustracaoAcessoSeguro className="h-48 w-auto text-acento" />
+        <h1 className="mt-6 text-3xl font-bold text-tinta">Chamados TI</h1>
+        <p className="mt-2 max-w-xs text-center text-sm text-tinta-suave">
+          Acompanhe e resolva chamados de suporte tecnico em um so lugar
+        </p>
+      </div>
+
+      <div className="flex flex-1 items-center justify-center bg-superficie p-6">
+        <div className="w-full max-w-sm animate-[entrada_0.25s_ease-out]">
+        <div className="flex h-12 w-12 items-center justify-center rounded-full bg-acento/10 lg:hidden">
           <IconeCadeado className="h-7 w-7 text-acento" />
         </div>
-        <h1 className="mt-4 text-2xl font-bold text-tinta-card">Chamados TI</h1>
+        <h1 className="mt-4 text-2xl font-bold text-tinta-card">Entrar</h1>
         <p className="mt-1 text-sm text-tinta-card-suave">
           Entre para acompanhar seus chamados
         </p>
@@ -152,6 +163,7 @@ export function Login() {
             Criar conta
           </Link>
         </p>
+        </div>
       </div>
     </main>
   );
