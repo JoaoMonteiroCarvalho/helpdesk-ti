@@ -68,6 +68,53 @@ export function IconeBusca({ className }: PropsIcone) {
   );
 }
 
+export function IconeEnvelope({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className}>
+      <rect x="3" y="5" width="14" height="10" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="m4 6 6 5 6-5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+    </svg>
+  );
+}
+
+export function IconeCadeadoPequeno({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className}>
+      <rect x="4.5" y="9" width="11" height="8" rx="1.5" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M7 9V6.5a3 3 0 0 1 6 0V9" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+export function IconeOlho({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className}>
+      <path
+        d="M2 10s2.7-5 8-5 8 5 8 5-2.7 5-8 5-8-5-8-5Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="10" r="2.2" stroke="currentColor" strokeWidth="1.4" />
+    </svg>
+  );
+}
+
+export function IconeOlhoFechado({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className}>
+      <path
+        d="M2 10s2.7-5 8-5 8 5 8 5-2.7 5-8 5-8-5-8-5Z"
+        stroke="currentColor"
+        strokeWidth="1.4"
+        strokeLinejoin="round"
+      />
+      <circle cx="10" cy="10" r="2.2" stroke="currentColor" strokeWidth="1.4" />
+      <path d="M3 3l14 14" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 export function IconeComentario({ className }: PropsIcone) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>

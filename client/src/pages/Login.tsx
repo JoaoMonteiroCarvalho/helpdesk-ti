@@ -2,7 +2,13 @@ import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
-import { IconeCadeado } from '../components/Icones';
+import {
+  IconeCadeado,
+  IconeCadeadoPequeno,
+  IconeEnvelope,
+  IconeOlho,
+  IconeOlhoFechado,
+} from '../components/Icones';
 import { Spinner } from '../components/Spinner';
 
 export function Login() {
@@ -13,6 +19,7 @@ export function Login() {
   const [senha, setSenha] = useState('');
   const [erro, setErro] = useState<string | null>(null);
   const [enviando, setEnviando] = useState(false);
+  const [senhaVisivel, setSenhaVisivel] = useState(false);
 
   // Enquanto a sessao esta sendo restaurada nao da para decidir nada:
   // usuario ainda e null mesmo para quem esta autenticado.
@@ -71,15 +78,18 @@ export function Login() {
             >
               E-mail
             </label>
-            <input
-              id="email"
-              type="email"
-              required
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
-            />
+            <div className="relative mt-1">
+              <IconeEnvelope className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tinta-card-suave" />
+              <input
+                id="email"
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full rounded-lg border border-linha-forte/40 py-2 pl-9 pr-3 text-tinta-card outline-none transition-all focus:border-acento focus:ring-2 focus:ring-acento/20"
+              />
+            </div>
           </div>
 
           <div>
@@ -89,15 +99,30 @@ export function Login() {
             >
               Senha
             </label>
-            <input
-              id="senha"
-              type="password"
-              required
-              autoComplete="current-password"
-              value={senha}
-              onChange={(e) => setSenha(e.target.value)}
-              className="mt-1 w-full rounded-lg border border-linha-forte/40 px-3 py-2 text-tinta-card outline-none transition-colors focus:border-acento"
-            />
+            <div className="relative mt-1">
+              <IconeCadeadoPequeno className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-tinta-card-suave" />
+              <input
+                id="senha"
+                type={senhaVisivel ? 'text' : 'password'}
+                required
+                autoComplete="current-password"
+                value={senha}
+                onChange={(e) => setSenha(e.target.value)}
+                className="w-full rounded-lg border border-linha-forte/40 py-2 pl-9 pr-9 text-tinta-card outline-none transition-all focus:border-acento focus:ring-2 focus:ring-acento/20"
+              />
+              <button
+                type="button"
+                onClick={() => setSenhaVisivel((atual) => !atual)}
+                aria-label={senhaVisivel ? 'Ocultar senha' : 'Mostrar senha'}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-tinta-card-suave transition-colors hover:text-tinta-card"
+              >
+                {senhaVisivel ? (
+                  <IconeOlhoFechado className="h-4 w-4" />
+                ) : (
+                  <IconeOlho className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
           {erro && (
