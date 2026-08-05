@@ -54,7 +54,7 @@ export function Sidebar() {
     <aside className="flex h-screen w-64 shrink-0 flex-col bg-papel">
       <div className="px-5 py-6">
         <h1 className="text-xl font-semibold tracking-tight text-tinta">
-          Chamados TI
+          Service Desk
         </h1>
       </div>
 
