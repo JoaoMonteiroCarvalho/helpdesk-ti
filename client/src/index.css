@@ -128,3 +128,84 @@ body {
     transform: rotate(360deg);
   }
 }
+
+/* Pulso de escala do cartao de preview (ver pages/Cadastro.tsx): da um
+   pequeno salto a cada letra digitada. */
+@keyframes pulso {
+  0% {
+    transform: scale(0.96);
+  }
+  60% {
+    transform: scale(1.02);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Blob "vivo" do painel de login (ver pages/Login.tsx): forma, escala
+   e rotacao mudam devagar e em compassos diferentes, como se o
+   simbolo estivesse respirando/se mexendo sozinho o tempo todo. */
+@keyframes respirar {
+  0% {
+    border-radius: 42% 58% 55% 45% / 55% 45% 55% 45%;
+    transform: rotate(0deg) scale(1);
+  }
+  25% {
+    border-radius: 68% 32% 35% 65% / 38% 62% 70% 30%;
+    transform: rotate(15deg) scale(1.1);
+  }
+  50% {
+    border-radius: 35% 65% 72% 28% / 68% 32% 38% 62%;
+    transform: rotate(-10deg) scale(0.92);
+  }
+  75% {
+    border-radius: 62% 38% 30% 70% / 32% 68% 40% 60%;
+    transform: rotate(10deg) scale(1.05);
+  }
+  100% {
+    border-radius: 42% 58% 55% 45% / 55% 45% 55% 45%;
+    transform: rotate(0deg) scale(1);
+  }
+}
+
+.blob-vivo {
+  animation: respirar 8s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blob-vivo {
+    animation: none;
+  }
+}
+
+/* Expansao do simbolo cobrindo a tela toda no login bem-sucedido (ver
+   pages/Login.tsx): o circulo cresce e vai se deformando organicamente
+   ate virar um retangulo solido, como se a pessoa estivesse entrando
+   atraves dele no sistema. */
+@keyframes expandir-tela {
+  0% {
+    transform: scale(1);
+    border-radius: 60% 40% 55% 45% / 45% 55% 40% 60%;
+  }
+  50% {
+    transform: scale(12);
+    border-radius: 40% 60% 35% 65% / 65% 35% 60% 40%;
+  }
+  100% {
+    transform: scale(40);
+    border-radius: 30% 70% 45% 55% / 50% 50% 30% 70%;
+  }
+}
+
+.expandir-tela {
+  transform-origin: center;
+  will-change: transform;
+  animation: expandir-tela 2.4s cubic-bezier(0.3, 0, 0.7, 1) forwards;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .expandir-tela {
+    animation: none;
+  }
+}
