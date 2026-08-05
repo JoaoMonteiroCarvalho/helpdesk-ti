@@ -151,51 +151,6 @@ export function IconeCaixaVazia({ className }: PropsIcone) {
   );
 }
 
-/** Ilustracao do painel lateral do login: um monitor com um cadeado
- * na tela, sugerindo "area protegida". Maior e mais elaborada que os
- * demais icones do arquivo, mas ainda no mesmo estilo linear. */
-export function IlustracaoAcessoSeguro({ className }: PropsIcone) {
-  return (
-    <svg viewBox="0 0 200 160" fill="none" className={className}>
-      {/* Monitor */}
-      <rect
-        x="30"
-        y="16"
-        width="140"
-        height="94"
-        rx="6"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path d="M85 128h30M100 110v18" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-      <path d="M70 140h60" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-
-      {/* Cadeado centralizado na tela */}
-      <rect
-        x="82"
-        y="52"
-        width="36"
-        height="28"
-        rx="4"
-        stroke="currentColor"
-        strokeWidth="2"
-      />
-      <path
-        d="M89 52v-9a11 11 0 0 1 22 0v9"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-      />
-      <circle cx="100" cy="64" r="3" fill="currentColor" />
-      <path d="M100 67v6" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-
-      {/* Linhas decorativas sugerindo texto/lista, como na referencia */}
-      <path d="M46 92h28M46 98h20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-      <path d="M126 92h28M134 98h20" stroke="currentColor" strokeWidth="2" strokeLinecap="round" opacity="0.5" />
-    </svg>
-  );
-}
-
 /** Icone maior e mais desenhado, para o cabecalho do login/cadastro. */
 export function IconeCadeado({ className }: PropsIcone) {
   return (
