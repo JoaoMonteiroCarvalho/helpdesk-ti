@@ -115,6 +115,20 @@ export function IconeOlhoFechado({ className }: PropsIcone) {
   );
 }
 
+export function IconeCheck({ className }: PropsIcone) {
+  return (
+    <svg viewBox="0 0 20 20" fill="none" className={className}>
+      <path
+        d="m4 10.5 4 4 8-9"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 export function IconeComentario({ className }: PropsIcone) {
   return (
     <svg viewBox="0 0 16 16" fill="none" className={className}>

@@ -1,10 +1,11 @@
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { Link, Navigate, useNavigate } from 'react-router-dom';
 import { ErroApi } from '../api/client';
 import { useAuth } from '../auth/AuthContext';
 import {
   IconeCadeado,
   IconeCadeadoPequeno,
+  IconeCheck,
   IconeEnvelope,
   IconeOlho,
   IconeOlhoFechado,
@@ -24,11 +25,6 @@ export function Login() {
   const [enviando, setEnviando] = useState(false);
   const [senhaVisivel, setSenhaVisivel] = useState(false);
   const [sucesso, setSucesso] = useState(false);
-  const [expandindo, setExpandindo] = useState(false);
-  const [posicaoSimbolo, setPosicaoSimbolo] = useState<{ top: number; left: number } | null>(
-    null
-  );
-  const refSimbolo = useRef<HTMLDivElement>(null);
 
   // Enquanto a sessao esta sendo restaurada nao da para decidir nada:
   // usuario ainda e null mesmo para quem esta autenticado.
@@ -67,20 +63,13 @@ export function Login() {
 
     try {
       await entrar(email, senha);
-      // Mostra o "deu certo" por um instante e so entao comeca a
-      // expandir o simbolo pela tela toda, navegando quando a
-      // expansao (2.4s) estiver terminando.
+
+      // Revelacao em circulo a partir do centro da tela: o clip-path
+      // cresce de 0% ate 150% cobrindo tudo, e o simbolo cresce e
+      // dissipa por cima. Navega quando o laranja ja cobriu a tela,
+      // entao a troca acontece atras da cor e nao aparece como corte.
       setSucesso(true);
-      setTimeout(() => {
-        // Guarda a posicao exata do simbolo na tela antes de fixa-lo,
-        // senao ele "pula" para o canto ao virar position: fixed.
-        const retangulo = refSimbolo.current?.getBoundingClientRect();
-        if (retangulo) {
-          setPosicaoSimbolo({ top: retangulo.top, left: retangulo.left });
-        }
-        setExpandindo(true);
-      }, 500);
-      setTimeout(() => navegar('/', { replace: true }), 2800);
+      setTimeout(() => navegar('/', { replace: true }), 1800);
     } catch (falha) {
       // A API responde com a mesma mensagem para e-mail inexistente e
       // senha errada, de proposito: diferenciar permitiria descobrir
@@ -102,22 +91,10 @@ export function Login() {
       <div className="hidden flex-1 flex-col items-center justify-center gap-6 bg-papel textura-pontos p-6 lg:flex">
         <h1 className="text-center text-3xl font-bold text-tinta">Service Desk</h1>
 
-        <div
-          ref={refSimbolo}
-          style={
-            expandindo && posicaoSimbolo
-              ? { top: posicaoSimbolo.top, left: posicaoSimbolo.left }
-              : undefined
-          }
-          className={
-            'flex h-28 w-28 items-center justify-center bg-acento ' +
-            (expandindo ? 'expandir-tela fixed z-50' : 'blob-vivo')
-          }
-        >
-          {/* Some assim que a expansao comeca: as petalas pequenas nao
-              acompanham bem um crescimento de 40x, entao fica so o
-              fundo solido se expandindo. */}
-          {!expandindo && (
+        <div className="blob-vivo flex h-28 w-28 items-center justify-center rounded-full bg-acento">
+          {sucesso ? (
+            <IconeCheck className="h-14 w-14 animate-[pulso_0.35s_ease-out] text-white" />
+          ) : (
             <div key={email} className="animate-[pulso_0.3s_ease-out]">
               <IdenticonOrganico nome={email} className="h-16 w-16" />
             </div>
@@ -139,6 +116,19 @@ export function Login() {
           </p>
         </div>
       </div>
+
+      {/* Revelacao: circulo laranja que abre do centro da tela, com o
+          simbolo crescendo e dissipando por cima. Anima so clip-path,
+          transform e opacity -- tudo composto na GPU, sem forcar
+          re-layout a cada quadro. */}
+      {sucesso && (
+        <div
+          aria-hidden
+          className="revelar-circulo fixed inset-0 z-50 flex items-center justify-center bg-acento"
+        >
+          <IdenticonOrganico nome={email} className="simbolo-engolir h-40 w-40" />
+        </div>
+      )}
 
       <div className="flex flex-1 items-center justify-center bg-superficie p-6">
         {/* Cartao flutuante estilo "modal", com icone circular e
